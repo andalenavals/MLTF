@@ -64,6 +64,8 @@ def parse_args():
                         action='store_const', const=True, help='Validate point estimate')
     parser.add_argument('--finetune', default=False,
                         action='store_const', const=True, help='Use SGD for getting as low as possible in the converged region')
+    parser.add_argument('--batch_size', default=None,
+                        help='Size of minibatches ')
    
     args = parser.parse_args()
 
@@ -145,7 +147,7 @@ def maketestdata(ncases=100):
     return features_test
 
 
-def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetune=False, epochs=1000, validation_data=None, batch_size=100):
+def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetune=False, epochs=1000, validation_data=None, batch_size=None):
     mask =np.all(~features.mask,axis=2,keepdims=True)
     caseweights=None
     
@@ -175,18 +177,16 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
                       shuffle=True, batch_size=batch_size,  validation_data=validation_data,
                       callbacks=[cp_callback, batch_callback])
 
-    print("hola", len(batch_callback.batch_loss), "\n")
-    print(batch_callback.batch_loss)
-    #for i in range (len(batch_callback.batch_accuracy)):
-    #    print(batch_callback.batch_loss[i])
-
-
     history_path=os.path.join(trainpath, "history.txt")
     history = ML_Tensorflow.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
     if validation_data is not None:
         history_path=os.path.join(trainpath, "history_val.txt")
         history_val = ML_Tensorflow.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
-
+    if batch_size is not None:
+        history_path=os.path.join(trainpath, "history_batches.txt")
+        batch_hist=np.array(np.split(np.array(batch_callback.batch_loss), epochs)).T.tolist()
+        if not finetune: history_batch= ML_Tensorflow.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
+        
     if finetune:
         model=ML_Tensorflow.models.create_model(input_shape, **model_kwargs)
         opt=tf.keras.optimizers.SGD(learning_rate=0.1)
@@ -196,18 +196,35 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
             model.load_weights(checkpoint_path)
         hist = model.fit([features, targets, mask], None, epochs=epochs, verbose=2, 
                       shuffle=True, batch_size=batch_size,  validation_data=validation_data,
-                      callbacks=[cp_callback])
+                      callbacks=[cp_callback, batch_callback])
 
         history_path=os.path.join(trainpath, "history.txt")
         history = ML_Tensorflow.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
         if validation_data is not None:
             history_path=os.path.join(trainpath, "history_val.txt")
             history_val = ML_Tensorflow.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
+        if batch_size is not None:
+            history_path=os.path.join(trainpath, "history_batches.txt")
+            batch_hist=np.array(np.split(np.array(batch_callback.batch_loss), epochs+epochs)).T.tolist()
+            history_batch= ML_Tensorflow.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
 
-    filename=os.path.join(trainpath, "history.png")
+    filename=os.path.join(trainpath, "history_train_and_val.png")
     fig, ax = plt.subplots()
     ML_Tensorflow.plot.plot_history_ax(ax,history, xscalelog=False, yscalelog=True, label="Training set")
     if validation_data is not None: ML_Tensorflow.plot.plot_history_ax(ax,history_val, xscalelog=False, yscalelog=True, label="Validation set")    
+    plt.tick_params(axis='both', which='major', labelsize=20)
+    plt.tick_params(axis='both', which='minor', labelsize=20)
+    plt.ylim(0.5*min(history), 1.5*max(history))
+    plt.tight_layout()
+    plt.savefig(filename,dpi=200)
+    plt.close()
+
+    filename=os.path.join(trainpath, "history_train_and_batches.png")
+    fig, ax = plt.subplots()
+    ML_Tensorflow.plot.plot_history_ax(ax,history, xscalelog=False, yscalelog=True, label="Training set")
+    if batch_size is not None:
+        for i, h in enumerate(history_batch):
+            ML_Tensorflow.plot.plot_history_ax(ax,h, xscalelog=False, yscalelog=True, label="Minibatch %i"%(i+1))    
     plt.tick_params(axis='both', which='major', labelsize=20)
     plt.tick_params(axis='both', which='minor', labelsize=20)
     plt.ylim(0.5*min(history), 1.5*max(history))
@@ -331,7 +348,7 @@ def main():
     
     logger.info("Data was done")
 
-    train(features, targets, trainingpath, checkpoint_path, epochs=10, validation_data=validation_data, finetune=args.finetune  )
+    train(features, targets, trainingpath, checkpoint_path, epochs=10, validation_data=validation_data, finetune=args.finetune, batch_size=args.batch_size )
     validate(features_val, targets_val, checkpoint_path, validationpath )
     test(features, targets,checkpoint_path, f, validationpath, features_test)
       

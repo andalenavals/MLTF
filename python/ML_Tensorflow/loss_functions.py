@@ -133,8 +133,6 @@ def mswb_lagrange2(targets, preds, point_preds, mask=None, lamb=1.0):
 
 # NEGATIVE LOG LIKELIHOOD
 def nll(targets, pred_distribution , mask=None):
-    import tensorflow as tf
-
     if tf.keras.backend.ndim(pred_distribution) == 2:
         targets=tf.reshape(targets, tf.shape(targets)[:2])
         if mask is not None:
@@ -150,7 +148,8 @@ def nll(targets, pred_distribution , mask=None):
     if tf.keras.backend.ndim(pred_distribution) == 3:
         if mask is not None:
 
-            assert pred_distribution[0].get_shape() ==mask[0].get_shape()
+            #assert pred_distribution[0].get_shape() ==mask[0].get_shape()
+            assert tf.shape(pred_distribution)[0]==tf.shape(mask)[0]
         
             nrea=tf.cast(tf.shape(mask)[1], tf.float32)
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
