@@ -40,16 +40,17 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 if float(tf.__version__[:3]) < 2.0:
     print("Using eager execution")
-    tf.compat.v1.enable_eager_execution()
-    #tf.enable_eager_execution()
+    #tf.compat.v1.enable_eager_execution()
+    tf.enable_eager_execution()
+
     
 import logging
 logger = logging.getLogger(__name__)
 
 
 
-model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':ML_Tensorflow.layer.TfbilacLayer}
-#model_kwargs={'loss_name':'mse', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
+#model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':ML_Tensorflow.layer.TfbilacLayer}
+model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
 NFEATS=2
 
 def parse_args():
@@ -62,9 +63,9 @@ def parse_args():
                         action='store_const', const=True, help='Train point estimate')
     parser.add_argument('--validate_', default=False,
                         action='store_const', const=True, help='Validate point estimate')
-    parser.add_argument('--finetune', default=False,
+    parser.add_argument('--finetune', default=True,
                         action='store_const', const=True, help='Use SGD for getting as low as possible in the converged region')
-    parser.add_argument('--batch_size', default=None,
+    parser.add_argument('--batch_size', default=50,
                         help='Size of minibatches ')
    
     args = parser.parse_args()
@@ -147,7 +148,7 @@ def maketestdata(ncases=100):
     return features_test
 
 
-def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetune=False, epochs=1000, validation_data=None, batch_size=None):
+def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetune=True, epochs=1000, validation_split=None, validation_data=None, batch_size=None):
     mask =np.all(~features.mask,axis=2,keepdims=True)
     caseweights=None
     
@@ -173,21 +174,27 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
         model.load_weights(checkpoint_path)
     
     model.compile(loss=None, optimizer=opt, metrics = [])
-    hist = model.fit([features, targets, mask], None, epochs=epochs, verbose=2, 
-                      shuffle=True, batch_size=batch_size,  validation_data=validation_data,
-                      callbacks=[cp_callback, batch_callback])
+    
+    training_data=[features.data, targets, mask]
+    
+    hist = model.fit(training_data, None, epochs=epochs, verbose=2, 
+                     shuffle=True, batch_size=batch_size,
+                     validation_split=validation_split, validation_data=validation_data,
+                     callbacks=[cp_callback, batch_callback])
 
     history_path=os.path.join(trainpath, "history.txt")
     history = ML_Tensorflow.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
-    if validation_data is not None:
+    if (validation_data is not None)|(validation_split is not None):
         history_path=os.path.join(trainpath, "history_val.txt")
         history_val = ML_Tensorflow.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
     if batch_size is not None:
         history_path=os.path.join(trainpath, "history_batches.txt")
         batch_hist=np.array(np.split(np.array(batch_callback.batch_loss), epochs)).T.tolist()
-        if not finetune: history_batch= ML_Tensorflow.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
-        
+        history_batch= ML_Tensorflow.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
+  
     if finetune:
+        reuse=True
+        fine_batch_callback=ML_Tensorflow.tools.BCP()
         model=ML_Tensorflow.models.create_model(input_shape, **model_kwargs)
         opt=tf.keras.optimizers.SGD(learning_rate=0.1)
         model.compile(loss=None, optimizer=opt, metrics = [])
@@ -195,23 +202,25 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
             logger.info("loading checkpoint weights")
             model.load_weights(checkpoint_path)
         hist = model.fit([features, targets, mask], None, epochs=epochs, verbose=2, 
-                      shuffle=True, batch_size=batch_size,  validation_data=validation_data,
-                      callbacks=[cp_callback, batch_callback])
+                         shuffle=True, batch_size=batch_size,
+                         validation_split=validation_split, validation_data=validation_data,
+                         callbacks=[cp_callback, fine_batch_callback])
 
         history_path=os.path.join(trainpath, "history.txt")
         history = ML_Tensorflow.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
-        if validation_data is not None:
+        
+        if (validation_data is not None)|(validation_split is not None):
             history_path=os.path.join(trainpath, "history_val.txt")
             history_val = ML_Tensorflow.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
         if batch_size is not None:
             history_path=os.path.join(trainpath, "history_batches.txt")
-            batch_hist=np.array(np.split(np.array(batch_callback.batch_loss), epochs+epochs)).T.tolist()
+            batch_hist=np.array(np.split(np.array(fine_batch_callback.batch_loss), epochs)).T.tolist()
             history_batch= ML_Tensorflow.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
 
     filename=os.path.join(trainpath, "history_train_and_val.png")
     fig, ax = plt.subplots()
     ML_Tensorflow.plot.plot_history_ax(ax,history, xscalelog=False, yscalelog=True, label="Training set")
-    if validation_data is not None: ML_Tensorflow.plot.plot_history_ax(ax,history_val, xscalelog=False, yscalelog=True, label="Validation set")    
+    if (validation_data is not None)|(validation_split is not None): ML_Tensorflow.plot.plot_history_ax(ax,history_val, xscalelog=False, yscalelog=True, label="Validation set")    
     plt.tick_params(axis='both', which='major', labelsize=20)
     plt.tick_params(axis='both', which='minor', labelsize=20)
     plt.ylim(0.5*min(history), 1.5*max(history))
@@ -310,7 +319,6 @@ def make_dir(dirname):
             os.makedirs(dirname)
     except OSError:
         if not os.path.exists(dirname): raise
-
         
 def main():    
     args = parse_args()
@@ -341,16 +349,21 @@ def main():
     nreas=1000
     nmsk_obj=5000
     features,targets=makedata(ncases, nreas, f, nmsk_obj, filename=trainingcat)
-    features_val,targets_val=makedata(ncases, nreas, f, nmsk_obj, filename=validationcat)
-    validation_data= [(features_val,targets_val, np.all(~features_val.mask,axis=2,keepdims=True))]
+    features_val,targets_val=makedata(ncases+100, nreas, f, nmsk_obj, filename=validationcat)
+
+    validation_data= ([features_val.data ,targets_val, np.all(~features_val.mask,axis=2,keepdims=True)],None)
     #validation_data= None
     features_test=maketestdata(ncases=100)
     
     logger.info("Data was done")
 
-    train(features, targets, trainingpath, checkpoint_path, epochs=10, validation_data=validation_data, finetune=args.finetune, batch_size=args.batch_size )
+    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=100, validation_data=validation_data, finetune=args.finetune, batch_size=args.batch_size )
     validate(features_val, targets_val, checkpoint_path, validationpath )
     test(features, targets,checkpoint_path, f, validationpath, features_test)
+
+
+
+    
       
 if __name__ == "__main__":
     main()

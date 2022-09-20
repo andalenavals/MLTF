@@ -25,15 +25,9 @@ import tensorflow as tf
 logger = logging.getLogger(__name__)
 
 def mse(targets, preds, mask=None):
-    assert preds[0].get_shape() ==mask[0].get_shape()
-    
+    assert preds[0].get_shape() ==mask[0].get_shape()     
     if tf.keras.backend.ndim(preds) == 3:
         if mask is not None:
-            '''
-            nrea= tf.constant(preds.get_shape().as_list()[1],tf.float32)
-            mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
-            squarebias=mask_factor*tf.keras.backend.square(mask*(preds-targets))
-            '''
             npoints=tf.cast(tf.shape(preds)[0]*tf.shape(preds)[1], tf.float32)
             mask_factor=npoints/tf.keras.backend.sum(mask)
             squarebias=mask_factor*tf.keras.backend.square(mask*(preds-targets))
@@ -45,11 +39,9 @@ def mse(targets, preds, mask=None):
     return mse_val
 
 def msb(targets, preds, mask=None, caseweights=None):
-    assert preds[0].get_shape() ==mask[0].get_shape()
-    
+    assert preds[0].get_shape() ==mask[0].get_shape()    
     if tf.keras.backend.ndim(preds) == 3:
         if mask is not None:        
-            #nrea= tf.constant(preds.get_shape().as_list()[1],tf.float32)
             nrea= tf.cast(tf.shape(preds)[1],tf.float32)
             masked_preds=preds*mask
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
@@ -98,7 +90,6 @@ def mswb_lagrange1(targets, preds, point_preds, mask=None, lamb=1.0):
         mswb_val=tf.keras.backend.mean(tf.keras.backend.square(biases))
 
         if mask is not None:
-            #nrea= tf.constant(preds.get_shape().as_list()[1],tf.float32)
             nrea= tf.cast(tf.shape(preds)[1],tf.float32)
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
             mean_preds_rea=mask_factor*tf.keras.backend.mean(masked_preds, axis=1, keepdims=True)
@@ -118,7 +109,6 @@ def mswb_lagrange2(targets, preds, point_preds, mask=None, lamb=1.0):
             num = tf.keras.backend.mean(masked_preds*point_preds, axis=1, keepdims=True) 
             den = tf.keras.backend.mean(masked_preds , axis=1, keepdims=True)
 
-            #nrea= tf.constant(preds.get_shape().as_list()[1],tf.float32)
             nrea= tf.cast(tf.shape(preds)[1],tf.float32)
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
             lagrange_term= lamb*tf.keras.backend.square(mask_factor*den-mweight)
@@ -147,8 +137,6 @@ def nll(targets, pred_distribution , mask=None):
 
     if tf.keras.backend.ndim(pred_distribution) == 3:
         if mask is not None:
-
-            #assert pred_distribution[0].get_shape() ==mask[0].get_shape()
             assert tf.shape(pred_distribution)[0]==tf.shape(mask)[0]
         
             nrea=tf.cast(tf.shape(mask)[1], tf.float32)
