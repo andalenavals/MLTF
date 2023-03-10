@@ -42,7 +42,6 @@ if float(tf.__version__[:3]) < 2.0:
     print("Using eager execution")
     #tf.compat.v1.enable_eager_execution()
     tf.enable_eager_execution()
-
     
 import logging
 logger = logging.getLogger(__name__)
@@ -51,6 +50,7 @@ logger = logging.getLogger(__name__)
 
 #model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':ML_Tensorflow.layer.TfbilacLayer}
 model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
+#model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
 NFEATS=2
 
 def parse_args():
@@ -61,7 +61,7 @@ def parse_args():
                         help='diractory of work')
     parser.add_argument('--train', default=False,
                         action='store_const', const=True, help='Train point estimate')
-    parser.add_argument('--validate_', default=False,
+    parser.add_argument('--validate', default=False,
                         action='store_const', const=True, help='Validate point estimate')
     parser.add_argument('--finetune', default=True,
                         action='store_const', const=True, help='Use SGD for getting as low as possible in the converged region')
@@ -76,7 +76,7 @@ def noise(n): return np.random.randn(n)
 def f(x): return np.sqrt(1.0 + x**2)
 def g(x): return x**3
 
-def makedata(ncases, nreas, func, nmsk_obj=0, noise_scale=0.1, theta_min=0.25 , theta_max=2.0, filename=None):
+def makedata(ncases, nreas, func, nmsk_obj=0, noise_scale=0.1, theta_min=0.25 , theta_max=2.0, filename=None, shuffle=True):
 
     if filename is not None:
         if os.path.exists(filename):
@@ -133,6 +133,11 @@ def makedata(ncases, nreas, func, nmsk_obj=0, noise_scale=0.1, theta_min=0.25 , 
         features=np.ma.array(features, mask=~mask0)
         logger.info('Number of blacklisted cases: %i'%len(bl_cases))
 
+    if shuffle:
+        ncases=targets.shape[0]
+        ind=np.random.choice(range(ncases),size=ncases, replace=False)
+        targets=targets[ind]
+        features=features[ind]
     logger.info("Data was done")
     with open(filename, 'wb') as handle:
             pickle.dump([features, targets], handle, -1)
@@ -156,15 +161,26 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     #features=features_normer(features)
 
     cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, 
-                                                     monitor='loss',
+                                                     monitor='loss',#"loss"
                                                      save_weights_only=True,
                                                      save_best_only= True,
                                                      verbose=1, 
                                                      save_freq='epoch')
 
     batch_callback=ML_Tensorflow.tools.BCP()
+    redlr_callback=tf.keras.callbacks.ReduceLROnPlateau( monitor="loss",
+                                                         factor=0.1,
+                                                         patience=50,
+                                                         verbose=1,
+                                                         mode="auto",
+                                                         min_delta=1e-10,
+                                                         cooldown=0,
+                                                         min_lr=0,)
 
-    input_shape=features[0].shape #(nreas, nfeas)
+    #input_shape=features[0].shape #(nreas, nfeas)
+    input_shape=(None, features[0].shape[1])
+
+    
     opt=tf.keras.optimizers.Adam(learning_rate=0.01)
     #opt=tf.keras.optimizers.SGD(learning_rate=0.1)
     model=ML_Tensorflow.models.create_model(input_shape, **model_kwargs)
@@ -180,7 +196,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     hist = model.fit(training_data, None, epochs=epochs, verbose=2, 
                      shuffle=True, batch_size=batch_size,
                      validation_split=validation_split, validation_data=validation_data,
-                     callbacks=[cp_callback, batch_callback])
+                     callbacks=[cp_callback, batch_callback,redlr_callback])
 
     history_path=os.path.join(trainpath, "history.txt")
     history = ML_Tensorflow.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
@@ -217,9 +233,11 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
             batch_hist=np.array(np.split(np.array(fine_batch_callback.batch_loss), epochs)).T.tolist()
             history_batch= ML_Tensorflow.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
 
+    xscalelog=True
+    yscalelog=True
     filename=os.path.join(trainpath, "history_train_and_val.png")
     fig, ax = plt.subplots()
-    ML_Tensorflow.plot.plot_history_ax(ax,history, xscalelog=False, yscalelog=True, label="Training set")
+    ML_Tensorflow.plot.plot_history_ax(ax,history, xscalelog=xscalelog, yscalelog=yscalelog, label="Training set")
     if (validation_data is not None)|(validation_split is not None): ML_Tensorflow.plot.plot_history_ax(ax,history_val, xscalelog=False, yscalelog=True, label="Validation set")    
     plt.tick_params(axis='both', which='major', labelsize=20)
     plt.tick_params(axis='both', which='minor', labelsize=20)
@@ -230,10 +248,10 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
 
     filename=os.path.join(trainpath, "history_train_and_batches.png")
     fig, ax = plt.subplots()
-    ML_Tensorflow.plot.plot_history_ax(ax,history, xscalelog=False, yscalelog=True, label="Training set")
+    ML_Tensorflow.plot.plot_history_ax(ax,history, xscalelog=xscalelog, yscalelog=yscalelog, label="Training set")
     if batch_size is not None:
         for i, h in enumerate(history_batch):
-            ML_Tensorflow.plot.plot_history_ax(ax,h, xscalelog=False, yscalelog=True, label="Minibatch %i"%(i+1))    
+            ML_Tensorflow.plot.plot_history_ax(ax,h, xscalelog=xscalelog, yscalelog=yscalelog, label="Minibatch %i"%(i+1))    
     plt.tick_params(axis='both', which='major', labelsize=20)
     plt.tick_params(axis='both', which='minor', labelsize=20)
     plt.ylim(0.5*min(history), 1.5*max(history))
@@ -250,19 +268,26 @@ def validate(features, targets, checkpoint_path, valpath):
     
     MAX_NPOINTS=5000
     
+    mask =np.all(~features.mask,axis=2,keepdims=True)
+
     input_shape=features[0].shape #(nreas, nfeas)
     model=ML_Tensorflow.models.create_model(input_shape, **model_kwargs )
     model.load_weights(checkpoint_path)
-
     if float(tf.__version__[:3]) >2.0:
         preds = model([features, tf.constant(0, shape=(features.shape[0], 1 , 1)), tf.constant(0, shape=features.shape)]).numpy()
     elif float(tf.__version__[:3]) <2.0:
         preds = model(features.astype('float32')).numpy()
+    preds=np.ma.array(preds,mask=~mask)
+
     val_biases_msb = np.mean(preds, axis=1, keepdims=True) - targets
 
+    loss_val_direct=np.mean(np.square(val_biases_msb))    
+    mask=tf.convert_to_tensor((mask*1.0).astype('float32'))
+    loss_val=ML_Tensorflow.loss_functions.msb(tf.convert_to_tensor(targets.astype('float32')), tf.convert_to_tensor(preds.astype('float32')), mask=mask)
+    print(loss_val_direct,loss_val.numpy())
     
     filename=os.path.join(valpath, "bias_vs_targets.png")
-    ML_Tensorflow.plot.color_plot(targets[:,0,0],val_biases_msb[:,0,0], None,False, r"$\theta$" ,r"$\langle \hat{\theta} - \theta \rangle$", "" , title="", ftsize=18,cmap="gnuplot", filename=filename, npoints_plot=MAX_NPOINTS, linreg=True)
+    ML_Tensorflow.plot.color_plot(np.ma.array(targets[:,0,0],mask=False) ,val_biases_msb[:,0,0], None,False, r"$\theta$" ,r"$\langle \hat{\theta} - \theta \rangle$", "" , title="", ftsize=18,cmap="gnuplot", filename=filename, npoints_plot=MAX_NPOINTS, linreg=True)
     
 
         
@@ -313,6 +338,7 @@ def test(features, targets, checkpoint_path, func, path, features_test):
 
     logger.info("***--- TESTING FINISHED --- ***")
     
+    
 def make_dir(dirname):
     try:
         if not os.path.exists(dirname):
@@ -339,6 +365,7 @@ def main():
     normerspath = os.path.expanduser(os.path.join(outpath, "data","normers"))
     make_dir(normerspath)
     trainingcat=os.path.join(outpath, "data", "traincat.pkl")
+    trainingvalcat=os.path.join(outpath, "data", "trainvalcat.pkl")
     validationcat=os.path.join(outpath, "data", "valcat.pkl")
     testcat=os.path.join(outpath, "data", "testcat.pkl")
 
@@ -349,15 +376,19 @@ def main():
     nreas=1000
     nmsk_obj=5000
     features,targets=makedata(ncases, nreas, f, nmsk_obj, filename=trainingcat)
-    features_val,targets_val=makedata(ncases+100, nreas, f, nmsk_obj, filename=validationcat)
 
+    features_val,targets_val=makedata(ncases, nreas+100, f, nmsk_obj, filename=trainingvalcat)
     validation_data= ([features_val.data ,targets_val, np.all(~features_val.mask,axis=2,keepdims=True)],None)
     #validation_data= None
+    #validation_split=0.3
+    validation_split=None
     features_test=maketestdata(ncases=100)
     
     logger.info("Data was done")
 
-    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=100, validation_data=validation_data, finetune=args.finetune, batch_size=args.batch_size )
+    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=10, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
+
+    features_val,targets_val=makedata(ncases, nreas, f, nmsk_obj, filename=validationcat)
     validate(features_val, targets_val, checkpoint_path, validationpath )
     test(features, targets,checkpoint_path, f, validationpath, features_test)
 

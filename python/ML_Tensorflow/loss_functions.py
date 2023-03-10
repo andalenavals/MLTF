@@ -25,7 +25,8 @@ import tensorflow as tf
 logger = logging.getLogger(__name__)
 
 def mse(targets, preds, mask=None):
-    assert preds[0].get_shape() ==mask[0].get_shape()     
+    #assert preds[0].get_shape() ==mask[0].get_shape()     
+    #assert tf.shape(preds[0])==tf.shape(mask[0])
     if tf.keras.backend.ndim(preds) == 3:
         if mask is not None:
             npoints=tf.cast(tf.shape(preds)[0]*tf.shape(preds)[1], tf.float32)
@@ -39,7 +40,7 @@ def mse(targets, preds, mask=None):
     return mse_val
 
 def msb(targets, preds, mask=None, caseweights=None):
-    assert preds[0].get_shape() ==mask[0].get_shape()    
+    #assert preds[0].get_shape() ==mask[0].get_shape()
     if tf.keras.backend.ndim(preds) == 3:
         if mask is not None:        
             nrea= tf.cast(tf.shape(preds)[1],tf.float32)
@@ -137,7 +138,7 @@ def nll(targets, pred_distribution , mask=None):
 
     if tf.keras.backend.ndim(pred_distribution) == 3:
         if mask is not None:
-            assert tf.shape(pred_distribution)[0]==tf.shape(mask)[0]
+            #assert tf.shape(pred_distribution)[0]==tf.shape(mask)[0]
         
             nrea=tf.cast(tf.shape(mask)[1], tf.float32)
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
