@@ -53,12 +53,12 @@ def msb(targets, preds, mask=None, caseweights=None):
         biases = means - targets
 
         if caseweights is not None:
-            logger.info("Using case weights")
+            logger.debug("Using case weights")
             num = tf.keras.backend.mean(caseweights*tf.keras.backend.square(biases))
             den = tf.keras.backend.mean(caseweights )
             msb_val=num/den
         else:
-            logger.info("Not using case weights")
+            logger.debug("Not using case weights")
             msb_val=tf.keras.backend.mean(tf.keras.backend.square(biases))
     return msb_val
 

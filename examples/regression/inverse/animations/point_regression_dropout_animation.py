@@ -19,24 +19,26 @@ File: ML_Tensorflow/examples/regression/inverse/noise_regression.py
 Created on: 13/09/22
 Author: Andres Navarro
 """
-
+import sys, os, glob
 import warnings
 warnings.filterwarnings("ignore")
 warnings.filterwarnings(
         "ignore", category=DeprecationWarning,
         message=r"tostring\(\) is deprecated\. Use tobytes\(\) instead\.")
 
-
-import sys, os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import ML_Tensorflow
 import numpy as np
 import random
 import pickle
 import matplotlib
-import astropy
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
+plt.style.use('style.mplstyle')
+import matplotlib.animation as anime
+import astropy
+import scipy
+import scipy.stats
 import tensorflow as tf
 if float(tf.__version__[:3]) < 2.0:
     print("Using eager execution")
@@ -48,10 +50,16 @@ logger = logging.getLogger(__name__)
 
 
 
-#model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':ML_Tensorflow.layer.TfbilacLayer}
-model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(3,), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
-#model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
+#model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,), 'activation':'sigmoid', 'layer':ML_Tensorflow.layer.TfbilacLayer, 'dropout_prob':0.4}
+model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense, 'dropout_prob':0.4}
+#model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense, 'dropout_prob':0.4}
 NFEATS=2
+SAMPLING_SIZE=500
+
+AUXNAME="deleteme.png"
+NFRAMES=100
+FIGZISE=(9,4)
+
 
 def parse_args():
     import argparse
@@ -170,7 +178,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     batch_callback=ML_Tensorflow.tools.BCP()
     redlr_callback=tf.keras.callbacks.ReduceLROnPlateau( monitor="loss",
                                                          factor=0.1,
-                                                         patience=1000,
+                                                         patience=5000,
                                                          verbose=1,
                                                          mode="auto",
                                                          min_delta=1e-10,
@@ -185,11 +193,12 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     #opt=tf.keras.optimizers.SGD(learning_rate=0.1)
     model=ML_Tensorflow.models.create_model(input_shape, **model_kwargs)
     model.compile(loss=None, optimizer=opt, metrics = [])
+
+    '''
     if os.path.isfile(checkpoint_path+'.index') & reuse:
         logger.info("loading checkpoint weights")
         model.load_weights(checkpoint_path)
-    
-    #model.compile(loss=None, optimizer=opt, metrics = [])
+    '''
     
     training_data=[features.data, targets, mask]
     
@@ -217,7 +226,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
         if os.path.isfile(checkpoint_path+'.index') & reuse:
             logger.info("loading checkpoint weights")
             model.load_weights(checkpoint_path)
-        hist = model.fit(training_data, None, epochs=epochs, verbose=2, 
+        hist = model.fit([features, targets, mask], None, epochs=epochs, verbose=2, 
                          shuffle=True, batch_size=batch_size,
                          validation_split=validation_split, validation_data=validation_data,
                          callbacks=[cp_callback, fine_batch_callback])
@@ -263,88 +272,276 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     logger.info("***--- TRAINING FINISHED --- ***")
 
     
+def linregfunc(x, y, prob=0.68):
+	"""
+	A linear regression y = m*x + c, with confidence intervals on m and c.
+	
+	As a safety measure, this function will refuse to work on masked arrays.
+	Indeed scipy.stats.linregress() seems to silently disregard masks...
+	... and as a safety measure, we compare against scipy.stats.linregress().
+	
+	"""
+	
+	if len(x) != len(y):
+		raise RuntimeError("Your arrays x and y do not have the same size")
+	
+	if np.ma.is_masked(x) or np.ma.is_masked(y):
+		raise RuntimeError("Do not give me masked arrays")
+	
+	n = len(x)
+	xy = x * y
+	xx = x * x
+	
+	b1 = (xy.mean() - x.mean() * y.mean()) / (xx.mean() - x.mean()**2)
+	b0 = y.mean() - b1 * x.mean()
+	
+	#s2 = 1./n * sum([(y[i] - b0 - b1 * x[i])**2 for i in xrange(n)])
+	s2 = np.sum((y - b0 - b1 * x)**2) / n
+	
+	alpha = 1.0 - prob
+	c1 = scipy.stats.chi2.ppf(alpha/2.,n-2)
+	c2 = scipy.stats.chi2.ppf(1-alpha/2.,n-2)
+	#print 'the confidence interval of s2 is: ',[n*s2/c2,n*s2/c1]
+	
+	c = -1 * scipy.stats.t.ppf(alpha/2.,n-2)
+	bb1 = c * (s2 / ((n-2) * (xx.mean() - (x.mean())**2)))**.5
+	#print 'the confidence interval of b1 is: ',[b1-bb1,b1+bb1]
+	
+	bb0 = c * ((s2 / (n-2)) * (1 + (x.mean())**2 / (xx.mean() - (x.mean())**2)))**.5
+	#print 'the confidence interval of b0 is: ',[b0-bb0,b0+bb0]
+	
+	ret = {"m":b1-1.0, "c":b0, "merr":bb1, "cerr":bb0}
+	
+	# A little test (for recent numpy, one would use np.isclose() for this !)
+	#slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(x, y)
+	'''
+	if not abs(slope - b1) <= 1e-6 * abs(slope):
+		raise RuntimeError("Slope error, %f, %f" % (slope, b1))
+	if not abs(intercept - b0) <= 1e-6 * abs(intercept):
+		raise RuntimeError("Intercept error, %f, %f" % (intercept, b0))
+	'''
+	return ret
 
-def validate(features, targets, checkpoint_path, valpath, targets_normer):
-    
-    MAX_NPOINTS=5000
-    
-    targets=targets_normer.denorm(targets)
-    mask =np.all(~features.mask,axis=2,keepdims=True)
+def linregw(x,y,sigma):
+        from scipy.optimize import curve_fit
+       
+        absolute_sigma=False # set true to take into account correlations
 
-    input_shape=features[0].shape #(nreas, nfeas)
-    model=ML_Tensorflow.models.create_model(input_shape, **model_kwargs )
-    model.load_weights(checkpoint_path)
-    if float(tf.__version__[:3]) >2.0:
-        preds = model([features, tf.constant(0, shape=(features.shape[0], 1 , 1)), tf.constant(0, shape=features.shape)]).numpy()
-    elif float(tf.__version__[:3]) <2.0:
-        preds = model(features.astype('float32')).numpy()
-    preds=np.ma.array(preds,mask=~mask)
-    preds=targets_normer.denorm(preds)
+        def f(x, a, b): return a * x + b
 
-    val_biases_msb = np.mean(preds, axis=1, keepdims=True) - targets
-
-    loss_val_direct=np.mean(np.square(val_biases_msb))    
-    mask=tf.convert_to_tensor((mask*1.0).astype('float32'))
-    loss_val=ML_Tensorflow.loss_functions.msb(tf.convert_to_tensor(targets.astype('float32')), tf.convert_to_tensor(preds.astype('float32')), mask=mask)
-    print(loss_val_direct,loss_val.numpy())
-    
-    filename=os.path.join(valpath, "bias_vs_targets.png")
-    ML_Tensorflow.plot.color_plot(np.ma.array(targets[:,0,0],mask=False) ,val_biases_msb[:,0,0], None,False, r"$\theta$" ,r"$\langle \hat{\theta} - \theta \rangle$", "" , title="", ftsize=18,cmap="gnuplot", filename=filename, npoints_plot=MAX_NPOINTS, linreg=True)
-    
-
+        p0 = [1.0, 0.0] # initial parameter estimate
+        popt, pcov = curve_fit(f, x, y, p0, sigma, absolute_sigma=absolute_sigma)
+        perr = np.sqrt(np.diag(pcov))
         
-    logger.info("***--- VALIDATING FINISHED --- ***")
+        m = popt[0] - 1.0
+        c = popt[1]
+        merr = perr[0]
+        cerr = perr[1]
+        ret = {"m":m, "c":c, "merr":merr, "cerr":cerr}
+        return ret
+
+def color_plot_ax(ax,x,y,z=None,yerr=None,colorlog=True,xtitle="",ytitle="",ctitle="",ftsize=16,xlim=None, ylim=None,cmap=None,filename=None, colorbar=True,linreg=True):
+
+    if linreg:
+        xplot=np.linspace(min(x),max(x))
+        #mask=~x.mask&~y.mask
+        #x_unmask,y_unmask=x[mask].data,y[mask].data
+        are_maskx=type(x)==np.ma.masked_array
+        are_masky=type(y)==np.ma.masked_array
+        are_masked=(np.ma.is_masked(x))|(np.ma.is_masked(y))|(are_maskx|are_masky)
+        if are_masked:
+            mask=~x.mask&~y.mask
+            x_unmask,y_unmask=x[mask].data,y[mask].data
+        else:
+            x_unmask,y_unmask=x,y
+        
+        if yerr is not None:
+            ret=linregw(x_unmask,y_unmask,yerr**2)
+        else:
+            ret=linregfunc(x_unmask,y_unmask)
+        m,merr,c, cerr=(ret["m"]+1),ret["merr"],ret["c"],ret["cerr"]
+        ax.plot(xplot,m*xplot+c, ls='-',linewidth=2, color='red', label='$\mu_{1}$: %.4f $\pm$ %.4f \n  c$_{1}$: %.4f $\pm$ %.4f'%(m,merr,c, cerr ))
+        ax.legend(loc='upper left', prop={'size': ftsize-4}, labelcolor="yellow")
+        
+    if colorlog: 
+        c=abs(c)
+        colornorm=LogNorm( vmin=np.nanmin(c), vmax=np.nanmax(c))
+    else: colornorm=None
 
 
-def test(features, targets, checkpoint_path, func, path, features_test, targets_normer, features_normer):
-    #features: training features
-    #targets: training targets
+    sct=ax.scatter(x, y,c=z, norm=colornorm, marker=".",alpha=0.7,cmap=cmap)
+
+    if yerr is not None:
+            ebarskwargs = {"fmt":'none', "color":"yellow", "ls":":", 'elinewidth':1.5, 'alpha':1.0}
+            ax.errorbar(x, y, yerr=yerr, **ebarskwargs)
+
     
-    mask_test =np.all(~features_test.mask,axis=2,keepdims=True)       
+    ax.set_xlabel(xtitle, fontsize=ftsize)
+    ax.set_ylabel(ytitle, fontsize=ftsize)
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.tick_params(axis='both', which='minor', labelsize=20)
+    if ylim is not None:
+        ax.set_ylim(ylim)
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    if colorbar:
+        cbar=plt.colorbar(sct, ax=ax)
+        cbar.ax.set_xlabel(ctitle, fontsize=ftsize-2)
+        cbar.ax.xaxis.set_label_coords(0.5,1.1)
+
+    for pos in ["left","right","top","bottom"]:
+        ax.spines[pos].set_color('white')
+    ax.yaxis.label.set_color('yellow')
+    ax.xaxis.label.set_color('yellow')
+    ax.tick_params(axis='x', colors='white')
+    ax.tick_params(axis='y', colors='white')
+    ax.set_facecolor('black')
+
+
+def make_plot(x1,y1, y1err, x2a,y2a,x2aerr, x2b,y2b, func, plotname='test.png', vmin=None, vmax=None,ylim=None,xlim=None, title1="", title2=""):
+    import matplotlib.pyplot as plt
+    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+    import numpy as np
+
+    fig, axs= plt.subplots(1, 2, figsize=FIGZISE)
+
+    norm=None
     
-    #Loading model
-    input_shape=features_test[0].shape #(nreas, nfeas)
-    model=ML_Tensorflow.models.create_model(input_shape, **model_kwargs)
-    model.load_weights(checkpoint_path)
-    if float(tf.__version__[:3]) >2.0:
-        test_preds = model.predict([features_test, tf.constant(0, shape=features_test.shape), tf.constant(0, shape=features_test.shape)])
-    elif float(tf.__version__[:3]) <=2.0:
-        test_preds = model(features_test.astype('float32')).numpy()
-    test_preds=np.ma.array(test_preds,mask=~mask_test)
-    test_preds=targets_normer.denorm(test_preds)
+    for ax, title in zip([axs[0],axs[1]],[title1, title2]):
+        ax.set_title(title,size=14, color="yellow")
+        ax.patch.set_edgecolor('white')
+        ax.patch.set_linewidth('2') 
+        #ax.axis('off')
+ 
+    xlabel=r"$\theta$"
+    ylabel=r"$\langle \hat{\theta} - \theta \rangle$"
+    color_plot_ax(axs[0],x1,y1,yerr=y1err, z=None,colorlog=False,xtitle=xlabel,ytitle=ylabel,ctitle="",ftsize=16,xlim=xlim, ylim=ylim,cmap=None,filename=None, colorbar=False,linreg=True)
+    #axs[0].set_title(title,size=14, color="yellow")    
 
-
-    #Selecting few training data points for the plot
-    npoints=10000
-    targets_1d = np.ma.concatenate(targets_normer.denorm(targets).T)[0]
-    features_1d = np.ma.concatenate(features_normer.denorm(features)[:,:,0].T)
-    showtrainindices = np.arange(targets_1d.size)
-    np.random.shuffle(showtrainindices)
-    showtrainindices = showtrainindices[:npoints]
-    targets_1d= targets_1d[showtrainindices]
-    features_1d = features_1d[showtrainindices]
-
-    features_test=features_normer.denorm(features_test)
-
-    # True function    
     trutheta = np.linspace( -1.0, 2.2, 100)
     trud = func(trutheta)
-    color_cycle = ["#1b9e77", "#d95f02", "#7570b3"]
 
-    plt.plot(targets_1d, features_1d, marker=".", color="gray", ls="None", ms=2, label="Training data samples")
-    plt.plot(test_preds[:,:,0], features_test[:,:,0], ls="-", color=color_cycle[2], label="Trained with %s"%(model_kwargs['loss_name']), lw=1.5, alpha=0.5)
-    plt.plot(trutheta, trud, ls="-", color="black", dashes=(5, 5), lw=2.0, label=r"$d = \sqrt{1 + \theta^2}$")
-    plt.xlabel(r"$\theta$ $\mathrm{and}$ $\hat{\theta}$", fontsize=18)
-    plt.ylabel(r"$d$", fontsize=18)
-    plt.legend(loc=2, fontsize=12, markerscale=4, numpoints=1)
-    plt.xlim(-1.2, 2.4)
-    plt.ylim(0.5, 3.0)
-    plt.tight_layout()
-    filename=os.path.join(path, "test.png")
-    plt.savefig(filename, dpi=200)
+    axs[1].plot(x2b, y2b, marker=".", color="gray", ls="None", ms=2, label="Training data samples")
+    ebarskwargs = {"fmt":'none', "ls":":", 'elinewidth':0.5, 'alpha':1.0}
+    axs[1].errorbar(x2a, y2a, xerr=x2aerr,**ebarskwargs)
+    axs[1].plot(x2a, y2a, ls="-", color="yellow", label="Trained with %s"%(model_kwargs['loss_name']), lw=1.5, alpha=0.5)
+    axs[1].plot(trutheta, trud, ls="-", color="white", dashes=(5, 5), lw=2.0, label=r"$d = \sqrt{1 + \theta^2}$")
+    axs[1].set_xlabel(r"$\theta$ $\mathrm{and}$ $\hat{\theta}$", fontsize=18)
+    axs[1].set_ylabel(r"$d$", fontsize=18)
+    axs[1].legend(loc=2, fontsize=12, markerscale=4, numpoints=1, labelcolor="green")
+    axs[1].set_xlim(-1.2, 2.4)
+    axs[1].set_ylim(0.5, 3.0)
 
-    logger.info("***--- TESTING FINISHED --- ***")
+    for pos in ["left","right","top","bottom"]:
+        axs[1].spines[pos].set_color('white')
+    axs[1].yaxis.label.set_color('yellow')
+    axs[1].xaxis.label.set_color('yellow')
+    axs[1].tick_params(axis='x', colors='white')
+    axs[1].tick_params(axis='y', colors='white')
+    axs[1].set_facecolor('black')
+
+    fig.tight_layout()
+    fig.patch.set_facecolor('black')
+    fig.savefig(plotname, transparent=False) #transparent does not work with gift
+    plt.close(fig)
+
     
+def make_animation(features, targets, checkpoint_path, func, valpath, features_test, features_normer, targets_normer):
+    fig, ax = plt.subplots(figsize=FIGZISE)
+    ims=[]
+
+    MAX_NPOINTS=5000
+    mask =np.all(~features.mask,axis=2,keepdims=True)
+    mask_test =np.all(~features_test.mask,axis=2,keepdims=True)
+
+    input_shape=features[0].shape #(nreas, nfeas)
+    input_shape=(None, features[0].shape[1])
+
+    model_kwargs.update({"training":True})
+    model=ML_Tensorflow.models.create_model(input_shape, **model_kwargs )
+    
+    checkpoints_path=os.path.dirname(checkpoint_path)
+    #files = sorted(glob.glob(os.path.join(checkpoints_path, "*.h5")))
+    files = sorted(glob.glob(os.path.join(checkpoints_path, "*.ckpt.index")), key=lambda x: int(x.split('.')[1].replace("-0","")))
+    checkpoints=["".join(f.rsplit(".index",1)) for f in files]
+    sel=NFRAMES//2
+    step=len(checkpoints)//sel
+    #step=1
+    if step >0:
+        indxs=[len(checkpoints)-1 -step*i for i in range(sel)]
+        aux=np.array(checkpoints)[indxs]
+    else:
+        aux=np.array(checkpoints)
+    iterlist= np.flip(aux).tolist() +aux.tolist()
+    for i,f in enumerate(iterlist):
+        print("Doing frame %i"%(i))
+        status=model.load_weights(f)
+        #status.assert_consumed()
+        status.expect_partial()
+
+        predictions=[]
+        for _ in range(SAMPLING_SIZE):
+            if float(tf.__version__[:3]) >2.0:
+                preds = model([features, tf.constant(0, shape=(features.shape[0], 1 , 1)), tf.constant(0, shape=features.shape)]).numpy()
+            elif float(tf.__version__[:3]) <2.0:
+                preds = model(features.astype('float32')).numpy()
+            preds=np.ma.array(preds,mask=~mask)
+            preds=targets_normer.denorm(preds)
+            predictions+=[preds]
+
+        preds_mean=np.ma.mean(predictions, axis=0)
+        preds_variance=np.ma.var(predictions, axis=0)
+    
+        val_biases_msb = np.ma.mean(preds_mean, axis=1, keepdims=True) - targets
+
+        nreas=preds_variance.shape[1]
+        val_biases_msb_err = (1/nreas)*np.ma.sqrt(np.ma.sum(preds_variance, axis=1))
+
+
+        x1=np.ma.array(targets_normer.denorm(targets)[:,0,0],mask=False)
+        y1=val_biases_msb[:,0,0]
+        y1err=val_biases_msb_err[:,0]
+
+
+        predictions=[]
+        for _ in range(SAMPLING_SIZE):
+            if float(tf.__version__[:3]) >2.0:
+                test_preds = model([features_test, tf.constant(0, shape=features_test.shape), tf.constant(0, shape=features_test.shape)])
+            elif float(tf.__version__[:3]) <=2.0:
+                test_preds = model(features_test.astype('float32')).numpy()
+            test_preds=np.ma.array(test_preds,mask=~mask_test)
+            test_preds=targets_normer.denorm(test_preds)
+            predictions+=[test_preds]
+
+        preds_mean=np.ma.mean(predictions, axis=0)
+        preds_std=np.ma.std(predictions, axis=0)
+    
+        x2a=preds_mean[:,0,0]
+        x2aerr=preds_std[:,0,0]
+        y2a=features_normer.denorm(features_test)[:,:,0]
+
+        #Selecting few training data points for the plot
+        npoints=10000
+        targets_1d = np.ma.concatenate(targets_normer.denorm(targets).T)[0]
+        features_1d = np.ma.concatenate(features_normer.denorm(features)[:,:,0].T)
+        showtrainindices = np.arange(targets_1d.size)
+        np.random.shuffle(showtrainindices)
+        showtrainindices = showtrainindices[:npoints]
+        x2b= targets_1d[showtrainindices]
+        y2b =features_1d[showtrainindices]
+
+        filename=os.path.join(valpath, AUXNAME)
+        make_plot(x1,y1, y1err, x2a,y2a,x2aerr, x2b,y2b, func, plotname=filename, ylim=[-0.04,0.05], title1="Loss: %.2e"%(float("0.%s"%(f.split(".")[2]))), title2="Epoch: %s"%(f.split(".")[1]).replace("-0","") )#, vmin=0, vmax=0.015, ylim=[-0.1,0.1])
+        im = ax.imshow(plt.imread(filename), animated = True)
+        ims.append([im])
+
+        
+    fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
+    ax.axis('off')
+    ani = anime.ArtistAnimation(fig, ims, interval=200, blit=True)
+    filename=os.path.join(valpath, 'inverse_regression.gif')
+    ani.save(filename)
+    plt.close(fig)
     
 def make_dir(dirname):
     try:
@@ -362,10 +559,12 @@ def main():
     
     outpath = os.path.expanduser(args.workdir)
     make_dir(outpath)
-    example_path='point_noise_regression_%ifeats_%s'%(NFEATS, model_kwargs['loss_name'])
+    example_path='point_noise_regression_dropout_animation_%ifeats_%s'%(NFEATS, model_kwargs['loss_name'])
     
     trainingpath = os.path.expanduser(os.path.join(outpath,example_path, "training"))
     make_dir(trainingpath)
+    checkpointpath=os.path.join(trainingpath, "checkpoints")
+    make_dir(checkpointpath)
     validationpath = os.path.expanduser(os.path.join(outpath,example_path,"validation"))
     make_dir(validationpath)
     
@@ -376,7 +575,8 @@ def main():
     validationcat=os.path.join(outpath, "data", "valcat.pkl")
     testcat=os.path.join(outpath, "data", "testcat.pkl")
 
-    checkpoint_path=os.path.join(trainingpath, "simple_regression.ckpt")
+    checkpoint_path=os.path.join(checkpointpath, "simple_regression.{epoch:02d}-{loss:.10f}.ckpt")
+    #checkpoint_path=os.path.join(checkpointpath, "simple_regression.{epoch:02d}-{loss:.10f}.h5")
 
     
     ncases=500
@@ -388,6 +588,7 @@ def main():
     targets_normer=ML_Tensorflow.normer.Normer(targets, type="01")
     targets=targets_normer(targets)
 
+    
     features_val,targets_val=makedata(ncases, nreas+100, f, nmsk_obj, filename=trainingvalcat)
     features_val=features_normer(features_val)
     targets_val=targets_normer(targets_val)
@@ -395,21 +596,19 @@ def main():
     #validation_data= None
     #validation_split=0.3
     validation_split=None
-    
+    features_test=maketestdata(ncases=100)
+    features_test=features_normer(features_test)
     
     logger.info("Data was done")
 
-    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=10000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
+    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=100000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
 
-    features_test=maketestdata(ncases=100)
-    features_test=features_normer(features_test)
     features_val,targets_val=makedata(ncases, nreas, f, nmsk_obj, filename=validationcat)
     features_val=features_normer(features_val)
     targets_val=targets_normer(targets_val)
-    validate(features_val, targets_val, checkpoint_path, validationpath, targets_normer )
-    test(features, targets,checkpoint_path, f, validationpath, features_test, targets_normer, features_normer)
+    
 
-
+    make_animation(features, targets, checkpoint_path, f, validationpath, features_test, features_normer, targets_normer)
 
     
       

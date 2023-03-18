@@ -5,6 +5,6 @@ Set of ML examples using tensorflow
 `$ pip install -v git+https://github.com/andalenavals/ML_Tensorflow`
 
 
-##Basic Usage
+## Basic Usage
 
 See `examples`
