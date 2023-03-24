@@ -218,9 +218,12 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
         if os.path.isfile(checkpoint_path+'.index') & reuse:
             logger.info("loading checkpoint weights")
             model.load_weights(checkpoint_path)
-        hist = model.fit([features, targets, mask], None, epochs=epochs, verbose=2, 
-                      shuffle=True, batch_size=batch_size,  validation_data=validation_data,
-                      callbacks=[cp_callback, fine_batch_callback])
+        hist = model.fit([features, targets, mask], None,
+                         epochs=epochs, verbose=2, shuffle=True,
+                         batch_size=batch_size,
+                         validation_data=validation_data,
+                         validation_split=validation_split,
+                         callbacks=[cp_callback, fine_batch_callback])
 
         history_path=os.path.join(trainpath, "history.txt")
         history = ML_Tensorflow.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
@@ -290,7 +293,8 @@ def validate(features, targets, checkpoint_path, valpath, targets_normer):
     
     val_biases_msb = np.ma.mean(preds_mean, axis=1, keepdims=True) - targets
 
-    nreas=preds_variance.shape[1]
+    #nreas=preds_variance.shape[1]
+    nreas=np.sum(~preds_variance.mask,axis=1) 
     val_biases_msb_err = (1/nreas)*np.sqrt(np.sum(preds_variance, axis=1))
     
     

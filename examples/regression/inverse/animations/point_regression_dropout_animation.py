@@ -178,7 +178,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     batch_callback=ML_Tensorflow.tools.BCP()
     redlr_callback=tf.keras.callbacks.ReduceLROnPlateau( monitor="loss",
                                                          factor=0.1,
-                                                         patience=5000,
+                                                         patience=10000,
                                                          verbose=1,
                                                          mode="auto",
                                                          min_delta=1e-10,
@@ -356,7 +356,8 @@ def color_plot_ax(ax,x,y,z=None,yerr=None,colorlog=True,xtitle="",ytitle="",ctit
             x_unmask,y_unmask=x,y
         
         if yerr is not None:
-            ret=linregw(x_unmask,y_unmask,yerr**2)
+            #ret=linregw(x_unmask,y_unmask,yerr)
+            ret=linregfunc(x_unmask,y_unmask)
         else:
             ret=linregfunc(x_unmask,y_unmask)
         m,merr,c, cerr=(ret["m"]+1),ret["merr"],ret["c"],ret["cerr"]
@@ -372,7 +373,7 @@ def color_plot_ax(ax,x,y,z=None,yerr=None,colorlog=True,xtitle="",ytitle="",ctit
     sct=ax.scatter(x, y,c=z, norm=colornorm, marker=".",alpha=0.7,cmap=cmap)
 
     if yerr is not None:
-            ebarskwargs = {"fmt":'none', "color":"yellow", "ls":":", 'elinewidth':1.5, 'alpha':1.0}
+            ebarskwargs = {"fmt":'none', "color":"yellow", "ls":":", 'elinewidth':0.4, 'alpha':0.5}
             ax.errorbar(x, y, yerr=yerr, **ebarskwargs)
 
     
@@ -393,8 +394,8 @@ def color_plot_ax(ax,x,y,z=None,yerr=None,colorlog=True,xtitle="",ytitle="",ctit
         ax.spines[pos].set_color('white')
     ax.yaxis.label.set_color('yellow')
     ax.xaxis.label.set_color('yellow')
-    ax.tick_params(axis='x', colors='white')
-    ax.tick_params(axis='y', colors='white')
+    ax.tick_params(axis='x', colors='white',which='both')
+    ax.tick_params(axis='y', colors='white',which='both')
     ax.set_facecolor('black')
 
 
@@ -415,7 +416,7 @@ def make_plot(x1,y1, y1err, x2a,y2a,x2aerr, x2b,y2b, func, plotname='test.png', 
  
     xlabel=r"$\theta$"
     ylabel=r"$\langle \hat{\theta} - \theta \rangle$"
-    color_plot_ax(axs[0],x1,y1,yerr=y1err, z=None,colorlog=False,xtitle=xlabel,ytitle=ylabel,ctitle="",ftsize=16,xlim=xlim, ylim=ylim,cmap=None,filename=None, colorbar=False,linreg=True)
+    color_plot_ax(axs[0],x1,y1,yerr=y1err, z=None,colorlog=False,xtitle=xlabel,ytitle=ylabel,ctitle="",ftsize=16,xlim=None, ylim=ylim,cmap=None,filename=None, colorbar=False,linreg=True)
     #axs[0].set_title(title,size=14, color="yellow")    
 
     trutheta = np.linspace( -1.0, 2.2, 100)
@@ -436,8 +437,8 @@ def make_plot(x1,y1, y1err, x2a,y2a,x2aerr, x2b,y2b, func, plotname='test.png', 
         axs[1].spines[pos].set_color('white')
     axs[1].yaxis.label.set_color('yellow')
     axs[1].xaxis.label.set_color('yellow')
-    axs[1].tick_params(axis='x', colors='white')
-    axs[1].tick_params(axis='y', colors='white')
+    axs[1].tick_params(axis='x', colors='white',which='both')
+    axs[1].tick_params(axis='y', colors='white',which='both')
     axs[1].set_facecolor('black')
 
     fig.tight_layout()
@@ -449,8 +450,9 @@ def make_plot(x1,y1, y1err, x2a,y2a,x2aerr, x2b,y2b, func, plotname='test.png', 
 def make_animation(features, targets, checkpoint_path, func, valpath, features_test, features_normer, targets_normer):
     fig, ax = plt.subplots(figsize=FIGZISE)
     ims=[]
-
+    
     MAX_NPOINTS=5000
+    targets=targets_normer.denorm(targets)
     mask =np.all(~features.mask,axis=2,keepdims=True)
     mask_test =np.all(~features_test.mask,axis=2,keepdims=True)
 
@@ -494,11 +496,12 @@ def make_animation(features, targets, checkpoint_path, func, valpath, features_t
     
         val_biases_msb = np.ma.mean(preds_mean, axis=1, keepdims=True) - targets
 
-        nreas=preds_variance.shape[1]
+        #nreas=preds_variance.shape[1]
+        nreas=np.sum(~preds_variance.mask,axis=1) 
         val_biases_msb_err = (1/nreas)*np.ma.sqrt(np.ma.sum(preds_variance, axis=1))
 
 
-        x1=np.ma.array(targets_normer.denorm(targets)[:,0,0],mask=False)
+        x1=np.ma.array(targets[:,0,0],mask=False)
         y1=val_biases_msb[:,0,0]
         y1err=val_biases_msb_err[:,0]
 
@@ -522,7 +525,7 @@ def make_animation(features, targets, checkpoint_path, func, valpath, features_t
 
         #Selecting few training data points for the plot
         npoints=10000
-        targets_1d = np.ma.concatenate(targets_normer.denorm(targets).T)[0]
+        targets_1d = np.ma.concatenate(targets.T)[0]
         features_1d = np.ma.concatenate(features_normer.denorm(features)[:,:,0].T)
         showtrainindices = np.arange(targets_1d.size)
         np.random.shuffle(showtrainindices)
@@ -593,15 +596,16 @@ def main():
     features_val=features_normer(features_val)
     targets_val=targets_normer(targets_val)
     validation_data= ([features_val.data ,targets_val, np.all(~features_val.mask,axis=2,keepdims=True)],None)
+    validation_split=None
     #validation_data= None
     #validation_split=0.3
-    validation_split=None
+    
     features_test=maketestdata(ncases=100)
     features_test=features_normer(features_test)
     
     logger.info("Data was done")
 
-    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=100000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
+    #train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=200000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
 
     features_val,targets_val=makedata(ncases, nreas, f, nmsk_obj, filename=validationcat)
     features_val=features_normer(features_val)

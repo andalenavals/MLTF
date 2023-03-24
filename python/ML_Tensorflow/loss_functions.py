@@ -122,6 +122,46 @@ def mswb_lagrange2(targets, preds, point_preds, mask=None, lamb=1.0):
 
     return mswb_val
 
+def msmb(targets, preds, point_preds, mask=None):
+    import tensorflow as tf
+    if tf.keras.backend.ndim(preds) == 3:
+        if mask is not None:
+            #nrea= tf.constant(preds.get_shape().as_list()[1],tf.float32)
+            nrea= tf.cast(tf.shape(preds)[1],tf.float32)
+            mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
+            masked_preds=(1+preds)*mask
+            #masked_preds=(0.5+preds)*mask
+            pred_masked_mean= mask_factor*tf.keras.backend.mean(masked_preds,axis=1,keepdims=True)
+            pred_masked_var = mask_factor*tf.keras.backend.var(masked_preds,axis=1,keepdims=True)+pred_masked_mean*pred_masked_mean*((1.0/mask_factor) -1)
+            num = mask_factor*tf.keras.backend.mean(masked_preds*point_preds,axis=1,keepdims=True)
+        else:
+            pred_masked_var = tf.keras.backend.var(masked_preds,axis=1,keepdims=True)
+            num = tf.keras.backend.mean(( 1+preds)*point_preds, axis=1, keepdims=True)
+
+        #penalty=1.0e-10*tf.keras.backend.mean(1.0/(pred_masked_var))
+        penalty=0.0
+        biases = num - targets
+        msmb_val=tf.keras.backend.mean(tf.keras.backend.square(biases))
+    return msmb_val+penalty
+
+def mswcb(targets,  w_preds, m_preds, point_preds, mask=None):
+    import tensorflow as tf
+
+    if tf.keras.backend.ndim(w_preds) == 3:
+        if mask is not None:
+            masked_w_preds=w_preds*mask
+            masked_1pm_preds=(1+m_preds)*mask
+            #mask factor cancel out for this case
+            num = tf.keras.backend.mean((masked_1pm_preds)*masked_w_preds*point_preds, axis=1, keepdims=True)
+            den = tf.keras.backend.mean(masked_w_preds , axis=1, keepdims=True) 
+        else:
+            num = tf.keras.backend.mean((1+m_preds)*w_preds*point_preds, axis=1, keepdims=True) 
+            den = tf.keras.backend.mean(w_preds , axis=1, keepdims=True)
+        
+        biases = num/den - targets
+        mswb_val=tf.keras.backend.mean(tf.keras.backend.square(biases))
+    return mswb_val
+
 # NEGATIVE LOG LIKELIHOOD
 def nll(targets, pred_distribution , mask=None):
     if tf.keras.backend.ndim(pred_distribution) == 2:

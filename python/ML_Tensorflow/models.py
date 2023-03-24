@@ -28,7 +28,7 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-def get_model(hidden_sizes=(5,5), activation='sigmoid', layer=layer.TfbilacLayer, dropout_prob=0.0):
+def get_model(hidden_sizes=(5,5), activation='sigmoid', layer=layer.TfbilacLayer, dropout_prob=0.0, outnodes=1):
     model = tf.keras.Sequential()
 
     for hidden_size in hidden_sizes:
@@ -38,7 +38,7 @@ def get_model(hidden_sizes=(5,5), activation='sigmoid', layer=layer.TfbilacLayer
         if dropout_prob>0.0:
             model.add(tf.keras.layers.Dropout(dropout_prob))
     # And the output layer, without activation:
-    model.add(layer(1))
+    if outnodes>0: model.add(layer(outnodes))
 
     return model
 
@@ -255,153 +255,6 @@ def create_mw_model(input_shape_w=None, hidden_sizes_w=(5,5), layer_w=layer.Tfbi
 
 
 
-
-# function for training with two outputs #simultaneously training g1 and g2
-def get_model_2(hidden_sizes=(5,5), activation='sigmoid', layer=layer.TfbilacLayer):
-    import tensorflow as tf
-    model = tf.keras.Sequential()
-
-    for hidden_size in hidden_sizes:
-        model.add(layer(hidden_size))
-        if activation is not None:
-            model.add(tf.keras.layers.Activation(activation))
-
-    # And the output layer, without activation:
-    model.add(layer(2))
-
-    return model
-
-
-def create_model_2(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer, activation='sigmoid', out_activation=None, loss_name='msb', use_mask=False, use_caseweights=False, lamb=None ):
-    #lamb: value for lagrange multiplier if loss function involves it.
-    import tensorflow as tf
-    tf.keras.backend.clear_session()
-    if input_shape is not None:
-        nreas = input_shape[0]
-        nfeas = input_shape[1]
-    else:
-        nreas=None
-        nfeas=None
-        input_shape=(nreas,nfeas)
-    input_fea=tf.keras.Input(input_shape,dtype='float32', name="Features") #feat
-    input_tar=tf.keras.Input((1, 2),dtype='float32', name="Targets") #targets
-    inputs= [input_fea,input_tar]
-    
-    model = get_model_2(hidden_sizes=hidden_sizes, activation=activation,  layer=layer)
-
-    shift=False; shiftval=1.0
-    
-    if loss_name in ['mswb','mswb_lagrange1','mswb_lagrange2']:#, 'mswcb']:
-        model.add(tf.keras.layers.Activation('sigmoid'))
-        if shift: model.add( tf.keras.layers.Lambda(lambda x:x+tf.constant(shiftval)) )
-    else:
-        if out_activation is not None:
-            model.add(tf.keras.layers.Activation(out_activation))
-
-    x=model(inputs[0])
-    if loss_name == 'mse':
-        logger.info("Using %s"%(loss_name))
-        if use_mask:
-            input_mask = tf.keras.Input((nreas,2),dtype='float32')
-            inputs.append(input_mask)
-            loss_func =loss_functions.mse( inputs[1], x, mask=inputs[2])
-        else:
-            loss_func=loss_functions.mse( inputs[1], x)
-            
-    if loss_name == 'msb':
-        logger.info("Using %s"%(loss_name))
-        if use_mask:
-            input_mask = tf.keras.Input((nreas,2),dtype='float32', name="Mask")
-            inputs.append(input_mask)
-            loss_func =loss_functions.msb_2( inputs[1], x, mask=inputs[2])
-        else:
-            loss_func=loss_functions.msb_2( inputs[1], x)
-    
-    if loss_name == 'msmb':
-        logger.info("Using %s"%(loss_name))
-
-        input_pointpreds=tf.keras.Input((nreas, 2),dtype='float32', name="Point_preds")
-        inputs.append(input_pointpreds)
-        if use_mask:
-            input_mask = tf.keras.Input((nreas,2),dtype='float32', name="Mask")
-            inputs.append(input_mask)
-            loss_func =loss_functions.msmb( inputs[1], x, inputs[2], mask=inputs[3])
-        else:
-            loss_func =loss_functions.msmb( inputs[1], x, inputs[2])
-            
-    if loss_name == 'mswb':
-        logger.info("Using %s"%(loss_name))
-        input_pointpreds=tf.keras.Input((nreas, 2),dtype='float32', name="Point_preds")
-        inputs.append(input_pointpreds)
-        if use_mask:
-            #input_mask = tf.keras.Input(input_shape,dtype='float32')
-            input_mask = tf.keras.Input((nreas,2),dtype='float32', name="Mask")
-            inputs.append(input_mask)
-            loss_func =loss_functions.mswb( inputs[1], x, inputs[2], mask=inputs[3])
-        else:
-            loss_func =loss_functions.mswb( inputs[1], x, inputs[2])
-
-    if lamb is not None: logger.info("Using lambda %.3f"%(lamb))
-    if loss_name == 'mswb_lagrange1':
-        logger.info("Using %s"%(loss_name))
-        input_pointpreds=tf.keras.Input((nreas, 2),dtype='float32', name="Point_preds")
-        inputs.append(input_pointpreds)
-        if use_mask:
-            input_mask = tf.keras.Input((nreas,2),dtype='float32', name="Mask")
-            inputs.append(input_mask)
-            loss_func =loss_functions.mswb_lagrange1( inputs[1], x, inputs[2], mask=inputs[3], lamb=lamb)
-        else:
-            loss_func =loss_functions.mswb_lagrange1( inputs[1], x, inputs[2], lamb=lamb)
-    if loss_name == 'mswb_lagrange2':
-        logger.info("Using %s"%(loss_name))
-        input_pointpreds=tf.keras.Input((nreas, 2),dtype='float32',name="Point_preds")
-        inputs.append(input_pointpreds)
-        if use_mask:
-            input_mask = tf.keras.Input((nreas,2),dtype='float32', name="Mask")
-            inputs.append(input_mask)
-            loss_func =loss_functions.mswb_lagrange2( inputs[1], x, inputs[2], mask=inputs[3], lamb=lamb)
-        else:
-            loss_func =loss_functions.mswb_lagrange2( inputs[1], x, inputs[2], lamb=lamb)
-    outputs=[x]
-    
-    #fully connected wm
-    if loss_name == 'mswcb':
-        
-        logger.info("Using %s"%(loss_name))
-        inputs[1]=tf.keras.Input((1, 1),dtype='float32') #targets
-        input_pointpreds=tf.keras.Input((nreas, 1),dtype='float32', name="Point_preds")
-        inputs.append(input_pointpreds)
-        # -1 means ? (dynamically determine the right value)
-        sw=tf.slice(x,[0,0,0],[-1,nreas,1], name="w_pred")
-        w=tf.keras.layers.Activation("sigmoid")(sw)
-
-        if out_activation is None:
-            logger.info("Without out activation function")
-            m=tf.slice(x,[0,0,1],[-1,nreas,1], name="m_pred")
-        else:
-            tf.keras.layers.Activation(out_activation,name="octivation_m")(tf.slice(x,[0,0,1],[-1,nreas,1]), name="m_pred")
-                
-        if use_mask:
-            #input_mask = tf.keras.Input(input_shape,dtype='float32')
-            input_mask = tf.keras.Input((nreas,1),dtype='float32', name="Mask")
-            inputs.append(input_mask)
-            loss_func =loss_functions.mswcb( inputs[1], w,m, inputs[2], mask=inputs[3])
-        else:
-            loss_func =loss_functions.mswcb( inputs[1], w,m, inputs[2])
-        outputs=[w,m]
-
-
-    # Adding loss function is problematic when trying multiprocessing
-    logger.debug("Trying to add model to loss function")
-    model=(tf.keras.Model(inputs=inputs,outputs=outputs))
-    model.add_loss(loss_func)
-    
-    logger.debug("Loss function successfully added to the the model")
-    #model.compile(loss=None, optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), metrics = [])
-    return model
-
-
-
 # PROBABILITY NETWORKS 
 def create_probabilistic_model_independentnormal(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer, activation='sigmoid', out_activation=None, loss_name='nll', use_mask=False, use_caseweights=False, lamb=None ):
     import tensorflow as tf
@@ -418,12 +271,22 @@ def create_probabilistic_model_independentnormal(input_shape=None, hidden_sizes=
     input_tar=tf.keras.Input((1, 1),dtype='float32') #targets
     inputs= [input_fea,input_tar]
     
-    model = get_model(hidden_sizes=hidden_sizes, activation=activation, layer=layer)
+    model = get_model(hidden_sizes=hidden_sizes, activation=activation, layer=layer, outnodes=0)
     shift=False; shiftval=1.0
 
     #give the mean and the standard deviation
     distribution_params = tf.keras.layers.Dense(units=2)(model(inputs[0]))
-    x = tfp.layers.IndependentNormal(1)(distribution_params)
+
+    mean=tf.slice(distribution_params,[0,0,0],[-1,-1,1], name="mu")
+    sigma=tf.slice(distribution_params,[0,0,1],[-1,-1,1], name="sigma")
+    #std=tf.keras.layers.Activation("sigmoid")(sigma)
+    std=tf.keras.layers.Activation("softplus")(sigma)
+    #std=tf.keras.layers.Activation("relu")(sigma)
+    pars=tf.concat([mean,std],axis=2)
+   
+    
+    x = tfp.layers.IndependentNormal(1)(pars)
+    #x = tfp.layers.IndependentNormal(1)(distribution_params)
     
     if loss_name == 'nll':
         logger.info("Using %s"%(loss_name))
@@ -436,7 +299,7 @@ def create_probabilistic_model_independentnormal(input_shape=None, hidden_sizes=
 
     # Adding loss function is problematic when trying multiprocessing
     logger.debug("Trying to add model to loss function")
-    model=(tf.keras.Model(inputs=inputs,outputs=[x]))
+    model=tf.keras.Model(inputs=inputs,outputs=[x])
     model.add_loss(loss_func)
     
     logger.debug("Loss function successfully added to the the model")
@@ -459,13 +322,29 @@ def create_probabilistic_model_mixturenormal(input_shape=None, hidden_sizes=(5,5
     input_tar=tf.keras.Input((1, 1),dtype='float32') #targets
     inputs= [input_fea,input_tar]
     
-    model = get_model(hidden_sizes=hidden_sizes, activation=activation, layer=layer)
+    model = get_model(hidden_sizes=hidden_sizes, activation=activation, layer=layer, outnodes=0)
     shift=False; shiftval=1.0
 
     #give the mean and the standard deviation
     distribution_params = tf.keras.layers.Dense(units=ncomp*3)(model(inputs[0]))
-    x = tfp.layers.MixtureNormal(ncomp)(distribution_params)
+
     
+    slices=[]
+    for p in range(3):
+        for c in [3*i for i in range(ncomp)]:
+            sli=tf.slice(distribution_params,[0,0,c+p],[-1,-1,1], name="mu")
+            if p==0: par=sli # mean
+            if p==1: par=tf.keras.layers.Activation("softplus")(sli) #p
+            if p==2: par=tf.keras.layers.Activation("softplus")(sli) #std
+            slices.append(par)
+
+    pars=tf.concat(slices,axis=2)
+    
+
+    #pars=distribution_params
+    
+    x = tfp.layers.MixtureNormal(ncomp)(pars)
+
     if loss_name == 'nll':
         logger.info("Using %s"%(loss_name))
         if use_mask:

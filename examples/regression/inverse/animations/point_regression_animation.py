@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 
 #model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':ML_Tensorflow.layer.TfbilacLayer}
-model_kwargs={'loss_name':'mse', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
+model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
 #model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
 NFEATS=2
 
@@ -375,8 +375,8 @@ def color_plot_ax(ax,x,y,z=None,yerr=None,colorlog=True,xtitle="",ytitle="",ctit
         ax.spines[pos].set_color('white')
     ax.yaxis.label.set_color('yellow')
     ax.xaxis.label.set_color('yellow')
-    ax.tick_params(axis='x', colors='white')
-    ax.tick_params(axis='y', colors='white')
+    ax.tick_params(axis='x', colors='white',which='both')
+    ax.tick_params(axis='y', colors='white',which='both')
     ax.set_facecolor('black')
 
 
@@ -416,8 +416,8 @@ def make_plot(x1,y1, x2a,y2a, x2b, y2b, func, plotname='test.png', vmin=None, vm
         axs[1].spines[pos].set_color('white')
     axs[1].yaxis.label.set_color('yellow')
     axs[1].xaxis.label.set_color('yellow')
-    axs[1].tick_params(axis='x', colors='white')
-    axs[1].tick_params(axis='y', colors='white')
+    axs[1].tick_params(axis='x', colors='white',which='both')
+    axs[1].tick_params(axis='y', colors='white',which='both')
     axs[1].set_facecolor('black')
 
     fig.tight_layout()
@@ -446,8 +446,12 @@ def make_animation(features, targets, checkpoint_path, func, valpath, features_t
     sel=NFRAMES//2
     step=len(checkpoints)//sel
     #step=1
+
+    #use last 5 check points
+    lastcheck=5
+    indxs=[len(checkpoints)-1-i for i in range(lastcheck)]
     if step >0:
-        indxs=[len(checkpoints)-1 -step*i for i in range(sel)]
+        indxs+=[len(checkpoints)-lastcheck -1 -step*i for i in range(sel)]
         aux=np.array(checkpoints)[indxs]
     else:
         aux=np.array(checkpoints)
@@ -563,7 +567,7 @@ def main():
     
     logger.info("Data was done")
 
-    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=100000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
+    #train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=100000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
 
     features_val,targets_val=makedata(ncases, nreas, f, nmsk_obj, filename=validationcat)
     features_val=features_normer(features_val)
