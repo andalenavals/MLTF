@@ -36,6 +36,7 @@ import matplotlib
 import astropy
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+plt.style.use('style.mplstyle')
 
 import tensorflow as tf
 if float(tf.__version__[:3]) < 2.0:
