@@ -189,8 +189,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     if os.path.isfile(checkpoint_path+'.index') & reuse:
         logger.info("loading checkpoint weights")
         model.load_weights(checkpoint_path)
-    
-    #model.compile(loss=None, optimizer=opt, metrics = [])
+        model.compile(loss=None, optimizer=opt, metrics = [])
     
     training_data=[features.data, targets, mask]
     
@@ -372,9 +371,9 @@ def main():
     
     normerspath = os.path.expanduser(os.path.join(outpath, "data","normers"))
     make_dir(normerspath)
-    trainingcat=os.path.join(outpath, "data", "traincat.pkl")
-    trainingvalcat=os.path.join(outpath, "data", "trainvalcat.pkl")
-    validationcat=os.path.join(outpath, "data", "valcat.pkl")
+    trainingcat=os.path.join(outpath, "data", "traincat38.pkl")
+    trainingvalcat=os.path.join(outpath, "data", "trainvalcat38.pkl")
+    validationcat=os.path.join(outpath, "data", "valcat38.pkl")
     testcat=os.path.join(outpath, "data", "testcat.pkl")
 
     checkpoint_path=os.path.join(trainingpath, "simple_regression.ckpt")
@@ -400,7 +399,7 @@ def main():
     
     logger.info("Data was done")
 
-    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=10000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
+    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=1000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
 
     features_test=maketestdata(ncases=100)
     features_test=features_normer(features_test)

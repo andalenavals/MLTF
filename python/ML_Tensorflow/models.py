@@ -157,14 +157,15 @@ def create_model(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer,
         else:
             loss_func =loss_functions.mswb_lagrange2( inputs[1], x, inputs[2], lamb=lamb)
 
-
     # Adding loss function is problematic when trying multiprocessing
+
     logger.debug("Trying to add model to loss function")
-    model=(tf.keras.Model(inputs=inputs,outputs=[x]))
+    model=tf.keras.Model(inputs=inputs,outputs=[x])
+    #model.compile(loss=loss_functions.msb,optimizer=tf.keras.optimizers.Adam(learning_rate=0.1))
     model.add_loss(loss_func)
     
     logger.debug("Loss function successfully added to the the model")
-    #model.compile(loss=None, optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), metrics = [])
+    
     return model
 
 
@@ -410,7 +411,14 @@ def posterior(kernel_size, bias_size, dtype=None):
     ])
 '''
 
-
+'''
+def prior(kernel_size, bias_size, dtype=None):
+    import tensorflow_probability as tfp
+    n = kernel_size + bias_size
+    return tf.keras.Sequential([
+        tfp.layers.DistributionLambda(lambda t: tfp.distributions.Normal(loc=tf.zeros(n), scale=1.0))
+    ])
+'''
 
 def prior(kernel_size, bias_size, dtype=None):
     import tensorflow as tf
@@ -443,10 +451,10 @@ def posterior(kernel_size, bias_size, dtype=None):
     return posterior_model
 
 
-
 def get_bayesian_model(hidden_sizes=(5,5), activation='sigmoid', kl_weight=None):
     import tensorflow as tf
     import tensorflow_probability as tfp
+    tfd = tfp.distributions
     
     model = tf.keras.Sequential()
 
