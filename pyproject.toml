@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=38", "wheel", "pybind11>=2.2"]
+
+[project]
+name = "ML_Tensorflow_andalenavals"
+version = "0.0.1"
+authors = [
+  { name="Andres Navarro Alsina", email="a.navarro.alsina@gmail.com" },
+]
+description = "Basic modules for ML examples based on TensorFlow"
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/andalenavals/ML_Tensorflow"
+"Bug Tracker" = "https://github.com/andalenavals/ML_Tensorflow/issues"
