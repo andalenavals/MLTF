@@ -1,5 +1,5 @@
 # MLTF
-Toolkit Set of ML examples using tensorflow
+Toolkit for creating ML models using tensorflow.
 
 ## How to install 
 `$ pip install -v git+https://github.com/andalenavals/MLTF`
