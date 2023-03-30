@@ -11,6 +11,7 @@ from . import models
 from . import normer
 from . import plot
 from . import tools
+from . import info
 
 
 

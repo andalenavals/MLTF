@@ -123,7 +123,6 @@ def mswb_lagrange2(targets, preds, point_preds, mask=None, lamb=1.0):
     return mswb_val
 
 def msmb(targets, preds, point_preds, mask=None):
-    import tensorflow as tf
     if tf.keras.backend.ndim(preds) == 3:
         if mask is not None:
             #nrea= tf.constant(preds.get_shape().as_list()[1],tf.float32)
@@ -132,17 +131,13 @@ def msmb(targets, preds, point_preds, mask=None):
             masked_preds=(1+preds)*mask
             #masked_preds=(0.5+preds)*mask
             pred_masked_mean= mask_factor*tf.keras.backend.mean(masked_preds,axis=1,keepdims=True)
-            pred_masked_var = mask_factor*tf.keras.backend.var(masked_preds,axis=1,keepdims=True)+pred_masked_mean*pred_masked_mean*((1.0/mask_factor) -1)
             num = mask_factor*tf.keras.backend.mean(masked_preds*point_preds,axis=1,keepdims=True)
         else:
-            pred_masked_var = tf.keras.backend.var(masked_preds,axis=1,keepdims=True)
             num = tf.keras.backend.mean(( 1+preds)*point_preds, axis=1, keepdims=True)
 
-        #penalty=1.0e-10*tf.keras.backend.mean(1.0/(pred_masked_var))
-        penalty=0.0
         biases = num - targets
         msmb_val=tf.keras.backend.mean(tf.keras.backend.square(biases))
-    return msmb_val+penalty
+    return msmb_val
 
 def mswcb(targets,  w_preds, m_preds, point_preds, mask=None):
     import tensorflow as tf
