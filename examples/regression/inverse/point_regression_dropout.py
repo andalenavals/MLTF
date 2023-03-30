@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 
 #model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,), 'activation':'sigmoid', 'layer':ML_Tensorflow.layer.TfbilacLayer, 'dropout_prob':0.4}
-model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense, 'dropout_prob':0.4}
+model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense, 'dropout_prob':0.4}
 #model_kwargs={'loss_name':'mse', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense, 'dropout_prob':0.2}
 NFEATS=2
 SAMPLING_SIZE=500
