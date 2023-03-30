@@ -1,8 +1,10 @@
-# ML_Tensorflow
-Set of ML examples using tensorflow
+# MLTF
+Toolkit Set of ML examples using tensorflow
 
 ## How to install 
-`$ pip install -v git+https://github.com/andalenavals/ML_Tensorflow`
+`$ pip install -v git+https://github.com/andalenavals/MLTF`
+
+`$ pip install mltf`
 
 ## Requirements
  tensorflow==1.15.0

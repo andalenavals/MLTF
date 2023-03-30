@@ -14,7 +14,7 @@
 #
 
 """
-File: ML_Tensorflow/examples/regression/inverse/noise_regression.py
+File: MLTF/examples/regression/inverse/noise_regression.py
 
 Created on: 13/09/22
 Author: Andres Navarro
@@ -28,7 +28,7 @@ warnings.filterwarnings(
 
 
 import sys, os
-import ML_Tensorflow
+import MLTF
 import numpy as np
 import random
 import pickle
@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
 
 
 
-#model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,), 'activation':'sigmoid', 'layer':ML_Tensorflow.layer.TfbilacLayer, 'dropout_prob':0.4}
+#model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,), 'activation':'sigmoid', 'layer':MLTF.layer.TfbilacLayer, 'dropout_prob':0.4}
 model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense, 'dropout_prob':0.4}
 #model_kwargs={'loss_name':'mse', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense, 'dropout_prob':0.2}
 NFEATS=2
@@ -165,7 +165,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
                                                      save_best_only= True,
                                                      verbose=1, 
                                                      save_freq='epoch')
-    batch_callback=ML_Tensorflow.tools.BCP()
+    batch_callback=MLTF.tools.BCP()
     redlr_callback=tf.keras.callbacks.ReduceLROnPlateau( monitor="val_loss",
                                                          factor=0.1,
                                                          patience=5000,
@@ -187,7 +187,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     input_shape=(None, features[0].shape[1])
     opt=tf.keras.optimizers.Adam(learning_rate=0.01)
     #opt=tf.keras.optimizers.SGD(learning_rate=0.1)
-    model=ML_Tensorflow.models.create_model(input_shape, **model_kwargs)
+    model=MLTF.models.create_model(input_shape, **model_kwargs)
     model.compile(loss=None, optimizer=opt, metrics = [])
     if os.path.isfile(checkpoint_path+'.index') & reuse:
         logger.info("loading checkpoint weights")
@@ -201,19 +201,19 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
                      callbacks=[cp_callback,batch_callback,redlr_callback])
 
     history_path=os.path.join(trainpath, "history.txt")
-    history = ML_Tensorflow.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
+    history = MLTF.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
     if (validation_data is not None)|(validation_split is not None):
         history_path=os.path.join(trainpath, "history_val.txt")
-        history_val = ML_Tensorflow.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
+        history_val = MLTF.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
     if batch_size is not None:
         history_path=os.path.join(trainpath, "history_batches.txt")
         batch_hist=np.array(np.split(np.array(batch_callback.batch_loss), epochs)).T.tolist()
-        if not finetune: history_batch= ML_Tensorflow.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
+        if not finetune: history_batch= MLTF.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
 
     if finetune:
         reuse=True
-        fine_batch_callback=ML_Tensorflow.tools.BCP()
-        model=ML_Tensorflow.models.create_model(input_shape, **model_kwargs)
+        fine_batch_callback=MLTF.tools.BCP()
+        model=MLTF.models.create_model(input_shape, **model_kwargs)
         opt=tf.keras.optimizers.SGD(learning_rate=0.1)
         model.compile(loss=None, optimizer=opt, metrics = [])
         if os.path.isfile(checkpoint_path+'.index') & reuse:
@@ -227,21 +227,21 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
                          callbacks=[cp_callback, fine_batch_callback])
 
         history_path=os.path.join(trainpath, "history.txt")
-        history = ML_Tensorflow.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
+        history = MLTF.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
         if (validation_data is not None)|(validation_split is not None):
             history_path=os.path.join(trainpath, "history_val.txt")
-            history_val = ML_Tensorflow.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
+            history_val = MLTF.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
         if batch_size is not None:
             history_path=os.path.join(trainpath, "history_batches.txt")
             batch_hist=np.array(np.split(np.array(batch_callback.batch_loss), epochs)).T.tolist()
-            history_batch= ML_Tensorflow.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
+            history_batch= MLTF.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
 
     xscalelog=True
     yscalelog=True
     filename=os.path.join(trainpath, "history_train_and_val.png")
     fig, ax = plt.subplots()
-    ML_Tensorflow.plot.plot_history_ax(ax,history, xscalelog=xscalelog, yscalelog=yscalelog, label="Training set")
-    if (validation_data is not None)|(validation_split is not None): ML_Tensorflow.plot.plot_history_ax(ax,history_val, xscalelog=xscalelog, yscalelog=yscalelog, label="Validation set")    
+    MLTF.plot.plot_history_ax(ax,history, xscalelog=xscalelog, yscalelog=yscalelog, label="Training set")
+    if (validation_data is not None)|(validation_split is not None): MLTF.plot.plot_history_ax(ax,history_val, xscalelog=xscalelog, yscalelog=yscalelog, label="Validation set")    
     plt.tick_params(axis='both', which='major', labelsize=20)
     plt.tick_params(axis='both', which='minor', labelsize=20)
     plt.ylim(0.5*min(history), 1.5*max(history))
@@ -251,10 +251,10 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
 
     filename=os.path.join(trainpath, "history_train_and_batches.png")
     fig, ax = plt.subplots()
-    ML_Tensorflow.plot.plot_history_ax(ax,history, xscalelog=xscalelog, yscalelog=yscalelog, label="Training set")
+    MLTF.plot.plot_history_ax(ax,history, xscalelog=xscalelog, yscalelog=yscalelog, label="Training set")
     if batch_size is not None:
         for i, h in enumerate(history_batch):
-            ML_Tensorflow.plot.plot_history_ax(ax,h, xscalelog=xscalelog, yscalelog=yscalelog, label="Minibatch %i"%(i+1))    
+            MLTF.plot.plot_history_ax(ax,h, xscalelog=xscalelog, yscalelog=yscalelog, label="Minibatch %i"%(i+1))    
     plt.tick_params(axis='both', which='major', labelsize=20)
     plt.tick_params(axis='both', which='minor', labelsize=20)
     plt.ylim(0.5*min(history), 1.5*max(history))
@@ -276,7 +276,7 @@ def validate(features, targets, checkpoint_path, valpath, targets_normer):
     
     input_shape=features[0].shape #(nreas, nfeas)
     model_kwargs.update({"training":True})
-    model=ML_Tensorflow.models.create_model(input_shape, **model_kwargs )
+    model=MLTF.models.create_model(input_shape, **model_kwargs )
     model.load_weights(checkpoint_path)
 
     predictions=[]
@@ -300,7 +300,7 @@ def validate(features, targets, checkpoint_path, valpath, targets_normer):
     
     
     filename=os.path.join(valpath, "bias_vs_targets.png")
-    ML_Tensorflow.plot.color_plot(np.ma.array(targets[:,0,0],mask=False),val_biases_msb[:,0,0], None,False, r"$\theta$" ,r"$\langle \hat{\theta} - \theta \rangle$", "" , yerr=val_biases_msb_err[:,0], title="", ftsize=18,cmap="gnuplot", filename=filename, npoints_plot=MAX_NPOINTS, linreg=True, alpha_err=1.0)
+    MLTF.plot.color_plot(np.ma.array(targets[:,0,0],mask=False),val_biases_msb[:,0,0], None,False, r"$\theta$" ,r"$\langle \hat{\theta} - \theta \rangle$", "" , yerr=val_biases_msb_err[:,0], title="", ftsize=18,cmap="gnuplot", filename=filename, npoints_plot=MAX_NPOINTS, linreg=True, alpha_err=1.0)
     
 
         
@@ -315,7 +315,7 @@ def test(features, targets, checkpoint_path, func, path, features_test, targets_
     mask_test =np.all(~features_test.mask,axis=2,keepdims=True)
     #Loading model
     input_shape=features_test[0].shape #(nreas, nfeas)
-    model=ML_Tensorflow.models.create_model(input_shape, **model_kwargs)
+    model=MLTF.models.create_model(input_shape, **model_kwargs)
     model.load_weights(checkpoint_path)
 
     predictions=[]
@@ -405,9 +405,9 @@ def main():
     nreas=1000
     nmsk_obj=5000
     features,targets=makedata(ncases, nreas, f, nmsk_obj, filename=trainingcat)
-    features_normer=ML_Tensorflow.normer.Normer(features, type="01") #sa1
+    features_normer=MLTF.normer.Normer(features, type="01") #sa1
     features=features_normer(features)
-    targets_normer=ML_Tensorflow.normer.Normer(targets, type="01")
+    targets_normer=MLTF.normer.Normer(targets, type="01")
     targets=targets_normer(targets)
     
     features_val,targets_val=makedata(ncases, nreas, f, nmsk_obj, filename=trainingvalcat)

@@ -14,7 +14,7 @@
 #
 
 """
-File: ML_Tensorflow/python/layer.py
+File: MLTF/python/layer.py
 
 Created on: 13/09/22
 Author: Andres Navarro

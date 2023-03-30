@@ -6,7 +6,7 @@ os.environ['KMP_WARNINGS'] = 'off'
 
 import logging
 
-import ML_Tensorflow
+import MLTF
 
 import tensorflow as tf
 tf.enable_eager_execution()
@@ -41,7 +41,7 @@ class Test_layer:
     def test_shape(self):
         #data = get_dummy_data()
         # Now create a layer
-        lay = ML_Tensorflow.layer.TfbilacLayer(10)
+        lay = MLTF.layer.TfbilacLayer(10)
 
         assert lay.compute_output_shape(self.data.shape) == (4, 3, 10)
 

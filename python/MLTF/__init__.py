@@ -1,6 +1,3 @@
-"""
-Subpackage to generate galaxy images with GalSim
-"""
 
 from pkgutil import extend_path
 

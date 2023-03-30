@@ -14,7 +14,7 @@
 #
 
 """
-File: ML_Tensorflow/examples/regression/inverse/noise_regression.py
+File: MLTF/examples/regression/inverse/noise_regression.py
 
 Created on: 13/09/22
 Author: Andres Navarro
@@ -28,7 +28,7 @@ warnings.filterwarnings(
 
 
 import os
-import ML_Tensorflow
+import MLTF
 import numpy as np
 import random
 import pickle
@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
 
 
 
-#model_kwargs={'loss_name':'nll', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':ML_Tensorflow.layer.TfbilacLayer}
+#model_kwargs={'loss_name':'nll', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':MLTF.layer.TfbilacLayer}
 model_kwargs={'loss_name':'nll', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
 NFEATS=2
 
@@ -160,7 +160,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
                                                      verbose=1, 
                                                      save_freq='epoch')
     
-    batch_callback=ML_Tensorflow.tools.BCP()
+    batch_callback=MLTF.tools.BCP()
     redlr_callback=tf.keras.callbacks.ReduceLROnPlateau( monitor="loss",
                                                          factor=0.1,
                                                          patience=100,
@@ -173,7 +173,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     
     callbacks=[cp_callback, redlr_callback]
     if batch_size is not None:
-        batch_callback=ML_Tensorflow.tools.BCP()
+        batch_callback=MLTF.tools.BCP()
         callbacks.append(batch_callback)
 
 
@@ -182,7 +182,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     
     opt=tf.keras.optimizers.Adam(learning_rate=0.1)
     #opt=tf.keras.optimizers.SGD(learning_rate=0.1)
-    model=ML_Tensorflow.models.create_probabilistic_model_independentnormal(input_shape, **model_kwargs)
+    model=MLTF.models.create_probabilistic_model_independentnormal(input_shape, **model_kwargs)
     model.compile(loss=None, optimizer=opt, metrics = [])
     if os.path.isfile(checkpoint_path+'.index') & reuse:
         logger.info("loading checkpoint weights")
@@ -195,18 +195,18 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
                       callbacks=callbacks)
 
     history_path=os.path.join(trainpath, "history.txt")
-    history = ML_Tensorflow.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
+    history = MLTF.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
     if (validation_data is not None)|(validation_split is not None):
         history_path=os.path.join(trainpath, "history_val.txt")
-        history_val = ML_Tensorflow.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
+        history_val = MLTF.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
     if batch_size is not None:
         history_path=os.path.join(trainpath, "history_batches.txt")
         batch_hist=np.array(np.split(np.array(batch_callback.batch_loss), epochs)).T.tolist()
-        if not finetune: history_batch= ML_Tensorflow.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
+        if not finetune: history_batch= MLTF.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
 
     if finetune:
         reuse=True
-        model=ML_Tensorflow.models.create_probabilistic_model_independentnormal(input_shape, **model_kwargs)
+        model=MLTF.models.create_probabilistic_model_independentnormal(input_shape, **model_kwargs)
         opt=tf.keras.optimizers.SGD(learning_rate=0.1)
         model.compile(loss=None, optimizer=opt, metrics = [])
         if os.path.isfile(checkpoint_path+'.index') & reuse:
@@ -219,14 +219,14 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
                          validation_split=validation_split,
                          callbacks=callbacks)
         history_path=os.path.join(trainpath, "history.txt")
-        history = ML_Tensorflow.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
+        history = MLTF.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
         if (validation_data is not None)|(validation_split is not None):
             history_path=os.path.join(trainpath, "history_val.txt")
-            history_val = ML_Tensorflow.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
+            history_val = MLTF.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
         if batch_size is not None:
             history_path=os.path.join(trainpath, "history_batches.txt")
             batch_hist=np.array(np.split(np.array(batch_callback.batch_loss), epochs+epochs)).T.tolist()
-            history_batch= ML_Tensorflow.tools.check_history_batch(batch_hist, history_path, reuse=reuse)  
+            history_batch= MLTF.tools.check_history_batch(batch_hist, history_path, reuse=reuse)  
 
     #history=np.array(history)-np.min(history)+1
     #if (validation_data is not None)|(validation_split is not None): history_val=np.array(history_val)-np.min(history_val)+1
@@ -235,8 +235,8 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     xscalelog=True; yscalelog=True
     filename=os.path.join(trainpath, "history_train_and_val.png")
     fig, ax = plt.subplots()
-    ML_Tensorflow.plot.plot_history_ax(ax,history, xscalelog=xscalelog, yscalelog=yscalelog, label="Training set")
-    if (validation_data is not None)|(validation_split is not None): ML_Tensorflow.plot.plot_history_ax(ax,history_val, xscalelog=xscalelog, yscalelog=yscalelog, label="Validation set")    
+    MLTF.plot.plot_history_ax(ax,history, xscalelog=xscalelog, yscalelog=yscalelog, label="Training set")
+    if (validation_data is not None)|(validation_split is not None): MLTF.plot.plot_history_ax(ax,history_val, xscalelog=xscalelog, yscalelog=yscalelog, label="Validation set")    
     plt.tick_params(axis='both', which='major', labelsize=20)
     plt.tick_params(axis='both', which='minor', labelsize=20)
     plt.ylim(0.5*min(history), 1.5*max(history))
@@ -246,10 +246,10 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
 
     filename=os.path.join(trainpath, "history_train_and_batches.png")
     fig, ax = plt.subplots()
-    ML_Tensorflow.plot.plot_history_ax(ax,history, xscalelog=xscalelog, yscalelog=yscalelog, label="Training set")
+    MLTF.plot.plot_history_ax(ax,history, xscalelog=xscalelog, yscalelog=yscalelog, label="Training set")
     if batch_size is not None:
         for i, h in enumerate(history_batch):
-            ML_Tensorflow.plot.plot_history_ax(ax,h, xscalelog=xscalelog, yscalelog=yscalelog, label="Minibatch %i"%(i+1))    
+            MLTF.plot.plot_history_ax(ax,h, xscalelog=xscalelog, yscalelog=yscalelog, label="Minibatch %i"%(i+1))    
     plt.tick_params(axis='both', which='major', labelsize=20)
     plt.tick_params(axis='both', which='minor', labelsize=20)
     plt.ylim(0.5*min(history), 1.5*max(history))
@@ -269,7 +269,7 @@ def validate(features, targets, checkpoint_path, valpath, targets_normer):
     
     
     input_shape=features[0].shape #(nreas, nfeas)
-    model=ML_Tensorflow.models.create_probabilistic_model_independentnormal(input_shape, **model_kwargs )
+    model=MLTF.models.create_probabilistic_model_independentnormal(input_shape, **model_kwargs )
     model.load_weights(checkpoint_path)
 
     if float(tf.__version__[:3]) >2.0:
@@ -308,12 +308,12 @@ def validate(features, targets, checkpoint_path, valpath, targets_normer):
 
     '''
     mask=tf.convert_to_tensor((mask*1.0).astype('float32'))
-    loss_val=ML_Tensorflow.loss_functions.msb(tf.convert_to_tensor(targets).astype('float32'), pred, mask=mask)
+    loss_val=MLTF.loss_functions.msb(tf.convert_to_tensor(targets).astype('float32'), pred, mask=mask)
     print(loss_val.numpy())
     '''    
         
     filename=os.path.join(valpath, "bias_vs_targets.png")
-    ML_Tensorflow.plot.color_plot(np.ma.array(targets[:,0,0], mask=False),val_biases_msb[:,0,0], None ,False, r"$\theta$" ,r"$\langle \hat{\theta} - \theta \rangle$", "" , yerr=val_biases_msb_err, title="", ftsize=18,cmap="gnuplot", filename=filename, npoints_plot=MAX_NPOINTS, linreg=True, alpha_err=1.0)
+    MLTF.plot.color_plot(np.ma.array(targets[:,0,0], mask=False),val_biases_msb[:,0,0], None ,False, r"$\theta$" ,r"$\langle \hat{\theta} - \theta \rangle$", "" , yerr=val_biases_msb_err, title="", ftsize=18,cmap="gnuplot", filename=filename, npoints_plot=MAX_NPOINTS, linreg=True, alpha_err=1.0)
     
 
         
@@ -330,7 +330,7 @@ def test(features, targets, checkpoint_path, func, path, features_test, targets_
     
     #Loading model
     input_shape=features_test[0].shape #(nreas, nfeas)
-    model=ML_Tensorflow.models.create_probabilistic_model_independentnormal(input_shape, **model_kwargs)
+    model=MLTF.models.create_probabilistic_model_independentnormal(input_shape, **model_kwargs)
     model.load_weights(checkpoint_path)
     if float(tf.__version__[:3]) >2.0:
         test_preds = model.predict([features_test, tf.constant(0, shape=features_test.shape), tf.constant(0, shape=features_test.shape)]).mean().numpy()
@@ -416,9 +416,9 @@ def main():
     nreas=1000
     nmsk_obj=5000
     features,targets=makedata(ncases, nreas, f, nmsk_obj, filename=trainingcat)
-    features_normer=ML_Tensorflow.normer.Normer(features, type="01") #sa1
+    features_normer=MLTF.normer.Normer(features, type="01") #sa1
     features=features_normer(features)
-    targets_normer=ML_Tensorflow.normer.Normer(targets, type="01")
+    targets_normer=MLTF.normer.Normer(targets, type="01")
     targets=targets_normer(targets)
     features_val,targets_val=makedata(ncases, nreas+100, f, nmsk_obj, filename=trainingvalcat)
     features_val=features_normer(features_val)

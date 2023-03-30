@@ -5,7 +5,7 @@ os.environ['KMP_WARNINGS'] = 'off'
 
 import logging
 
-import ML_Tensorflow
+import MLTF
 
 import numpy as np
 import tensorflow as tf
@@ -49,22 +49,22 @@ class Test_loss:
 
 
     def test_msb(self):
-        msb = ML_Tensorflow.loss_functions.msb
+        msb = MLTF.loss_functions.msb
         val = tf.keras.backend.get_value(msb(self.three_d_truths, self.preds))
         assert np.isclose(val, 0.0)
     def test_mse(self):
-        mse = ML_Tensorflow.loss_functions.mse
+        mse = MLTF.loss_functions.mse
         val = tf.keras.backend.get_value(mse(self.three_d_truths, self.preds))
         assert np.isclose(val, 11./120)
     def test_mswb(self):
-        mswb = ML_Tensorflow.loss_functions.mswb
+        mswb = MLTF.loss_functions.mswb
         val = tf.keras.backend.get_value(mswb(self.three_d_truths, self.wpreds, self.preds))
         assert np.isclose(val, 0.006944444444444451)
     def test_msmb(self):
-        msmb = ML_Tensorflow.loss_functions.msmb
+        msmb = MLTF.loss_functions.msmb
         val = tf.keras.backend.get_value(msmb(self.three_d_truths, self.mpreds, self.preds))
         assert np.isclose(val, 0.0)
     def test_mswcb(self):
-        mswcb = ML_Tensorflow.loss_functions.mswcb
+        mswcb = MLTF.loss_functions.mswcb
         val = tf.keras.backend.get_value(mswcb(self.three_d_truths, self.wpreds, self.mpreds, self.preds))
         assert np.isclose(val, 1./36)

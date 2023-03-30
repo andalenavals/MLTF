@@ -6,7 +6,7 @@ os.environ['KMP_WARNINGS'] = 'off'
 
 import logging
 
-import ML_Tensorflow
+import MLTF
 
 
 import tensorflow as tf
@@ -20,7 +20,7 @@ class Test_model:
 
     def test_model(self):
 
-        model = ML_Tensorflow.models.get_model()
+        model = MLTF.models.get_model()
 
         data = tf.zeros((4, 3, 2)) # 2 features
         out = model(data)
@@ -30,7 +30,7 @@ class Test_model:
         # Gives 51 params, including biases.
         assert model.count_params() == 51
 
-        model = ML_Tensorflow.models.get_model(hidden_sizes=(10, 10, 10))
+        model = MLTF.models.get_model(hidden_sizes=(10, 10, 10))
         data = tf.zeros((4, 3, 3)) # 3 features
         out = model(data)
         assert model.count_params() == 271

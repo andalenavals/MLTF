@@ -14,7 +14,7 @@
 #
 
 """
-File: ML_Tensorflow/python/loss_functions.py
+File: MLTF/python/loss_functions.py
 
 Created on: 13/09/22
 Author: Andres Navarro

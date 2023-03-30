@@ -14,7 +14,7 @@
 #
 
 """
-File: ML_Tensorflow/python/models.py
+File: MLTF/python/models.py
 
 Created on: 13/09/22
 Author: Andres Navarro

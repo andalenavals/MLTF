@@ -6,7 +6,7 @@ os.environ['KMP_WARNINGS'] = 'off'
 
 import logging
 
-import ML_Tensorflow
+import MLTF
 
 import numpy as np
 
@@ -27,7 +27,7 @@ class Test_normer:
 
 
     def test_normer(self):
-        normer = ML_Tensorflow.normer.Normer(self.data)
+        normer = MLTF.normer.Normer(self.data)
         normdata = normer(self.data)
         assert np.all(normdata<=1.0)
         reconstructed_data = normer.denorm(normdata)

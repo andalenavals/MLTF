@@ -2,12 +2,12 @@
 requires = ["setuptools>=38", "wheel", "pybind11>=2.2"]
 
 [project]
-name = "ML_Tensorflow_andalenavals"
+name = "MLTF"
 version = "0.0.1"
 authors = [
   { name="Andres Navarro Alsina", email="a.navarro.alsina@gmail.com" },
 ]
-description = "Basic modules for ML examples based on TensorFlow"
+description = "Basic modules for ML model based on TensorFlow"
 readme = "README.md"
 requires-python = ">=3.6"
 classifiers = [
@@ -17,5 +17,5 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/andalenavals/ML_Tensorflow"
-"Bug Tracker" = "https://github.com/andalenavals/ML_Tensorflow/issues"
+"Homepage" = "https://github.com/andalenavals/MLTF"
+"Bug Tracker" = "https://github.com/andalenavals/MLTF/issues"
