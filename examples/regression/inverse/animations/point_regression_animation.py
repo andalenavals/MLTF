@@ -174,6 +174,9 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
                                                      save_best_only= True,
                                                      verbose=1, 
                                                      save_freq='epoch')
+    print("HOLA")
+    
+    print(cp_callback.best)
 
     batch_callback=MLTF.tools.BCP()
     redlr_callback=tf.keras.callbacks.ReduceLROnPlateau( monitor="loss",
@@ -194,16 +197,28 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     model=MLTF.models.create_model(input_shape, **model_kwargs)
     model.compile(loss=None, optimizer=opt, metrics = [])
 
-    '''
-    if os.path.isfile(checkpoint_path+'.index') & reuse:
-        logger.info("loading checkpoint weights")
-        model.load_weights(checkpoint_path)
-    '''
+    initialepoch=0
+    dircheck=os.path.dirname(checkpoint_path)
+    if os.listdir(dircheck):
+        files=glob.glob(os.path.join(dircheck, "*.index"))
+        files.sort(key=lambda x: os.path.getmtime(x))
+        checkpoint_path=files[-1]
+        s=checkpoint_path
+        initial_epoch=int(s[s.find("epoch:")+len("epoch:"):s.rfind("_")])
+        initial_loss=float(s[s.find("loss:")+len("loss:"):s.rfind(".ckpt.index")])
+        print(initial_epoch)
+        print(initial_loss)
+        cp_callback.best = initial_loss
+        if os.path.isfile(checkpoint_path) & reuse:
+            logger.info("loading checkpoint weights")
+            model.load_weights(checkpoint_path.replace(".index",""))
+    
+
     
     training_data=[features.data, targets, mask]
     
     hist = model.fit(training_data, None, epochs=epochs, verbose=2, 
-                     shuffle=True, batch_size=batch_size,
+                     shuffle=True, batch_size=batch_size, initial_epoch=initial_epoch,
                      validation_split=validation_split, validation_data=validation_data,
                      callbacks=[cp_callback, batch_callback,redlr_callback])
 
@@ -267,7 +282,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     plt.tight_layout()
     plt.savefig(filename,dpi=200)
     plt.close()
-
+    
     
     logger.info("***--- TRAINING FINISHED --- ***")
 
@@ -541,7 +556,7 @@ def main():
     validationcat=os.path.join(outpath, "data", "valcat.pkl")
     testcat=os.path.join(outpath, "data", "testcat.pkl")
 
-    checkpoint_path=os.path.join(checkpointpath, "simple_regression.{epoch:02d}-{loss:.10f}.ckpt")
+    checkpoint_path=os.path.join(checkpointpath, "epoch:{epoch:1d}_loss:{loss:.3e}.ckpt")
     #checkpoint_path=os.path.join(checkpointpath, "simple_regression.{epoch:02d}-{loss:.10f}.h5")
 
     
@@ -567,14 +582,14 @@ def main():
     
     logger.info("Data was done")
 
-    #train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=100000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
+    train(features,targets, trainingpath, checkpoint_path, reuse=True, epochs=2025, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
 
     features_val,targets_val=makedata(ncases, nreas, f, nmsk_obj, filename=validationcat)
     features_val=features_normer(features_val)
     targets_val=targets_normer(targets_val)
     
 
-    make_animation(features_val, targets_val, checkpoint_path, f, validationpath, features_test, features_normer, targets_normer)
+    #make_animation(features_val, targets_val, checkpoint_path, f, validationpath, features_test, features_normer, targets_normer)
 
 
 

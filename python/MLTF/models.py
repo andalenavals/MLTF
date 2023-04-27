@@ -47,7 +47,6 @@ def get_model(hidden_sizes=(5,5), activation='sigmoid', layer=layer.TfbilacLayer
 
 def create_model(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer, activation='sigmoid', out_activation=None, loss_name='msb', use_mask=False, use_caseweights=False, lamb=None, dropout_prob=0.0,training=None):
     #lamb: value for lagrange multiplier if loss function involves it.
-    tf.keras.backend.clear_session()
     if input_shape is not None:
         nreas = input_shape[0]
         nfeas = input_shape[1]
