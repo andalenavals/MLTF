@@ -23,13 +23,14 @@ import logging
 import tensorflow as tf
 
 logger = logging.getLogger(__name__)
+PRECISION=tf.float32 
 
 def mse(targets, preds, mask=None):
     #assert preds[0].get_shape() ==mask[0].get_shape()     
     #assert tf.shape(preds[0])==tf.shape(mask[0])
     if tf.keras.backend.ndim(preds) == 3:
         if mask is not None:
-            npoints=tf.cast(tf.shape(preds)[0]*tf.shape(preds)[1], tf.float32)
+            npoints=tf.cast(tf.shape(preds)[0]*tf.shape(preds)[1], PRECISION)
             mask_factor=npoints/tf.keras.backend.sum(mask)
             squarebias=mask_factor*tf.keras.backend.square(mask*(preds-targets))
         else:
@@ -43,7 +44,7 @@ def msb(targets, preds, mask=None, caseweights=None):
     #assert preds[0].get_shape() ==mask[0].get_shape()
     if tf.keras.backend.ndim(preds) == 3:
         if mask is not None:        
-            nrea= tf.cast(tf.shape(preds)[1],tf.float32)
+            nrea= tf.cast(tf.shape(preds)[1],PRECISION)
             masked_preds=preds*mask
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
             means=mask_factor*tf.keras.backend.mean(masked_preds, axis=1, keepdims=True)
@@ -91,7 +92,7 @@ def mswb_lagrange1(targets, preds, point_preds, mask=None, lamb=1.0):
         mswb_val=tf.keras.backend.mean(tf.keras.backend.square(biases))
 
         if mask is not None:
-            nrea= tf.cast(tf.shape(preds)[1],tf.float32)
+            nrea= tf.cast(tf.shape(preds)[1],PRECISION)
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
             mean_preds_rea=mask_factor*tf.keras.backend.mean(masked_preds, axis=1, keepdims=True)
             mean_preds= tf.keras.backend.mean(mean_preds_rea)
@@ -110,7 +111,7 @@ def mswb_lagrange2(targets, preds, point_preds, mask=None, lamb=1.0):
             num = tf.keras.backend.mean(masked_preds*point_preds, axis=1, keepdims=True) 
             den = tf.keras.backend.mean(masked_preds , axis=1, keepdims=True)
 
-            nrea= tf.cast(tf.shape(preds)[1],tf.float32)
+            nrea= tf.cast(tf.shape(preds)[1],PRECISION)
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
             lagrange_term= lamb*tf.keras.backend.square(mask_factor*den-mweight)
         else:
@@ -125,8 +126,8 @@ def mswb_lagrange2(targets, preds, point_preds, mask=None, lamb=1.0):
 def msmb(targets, preds, point_preds, mask=None):
     if tf.keras.backend.ndim(preds) == 3:
         if mask is not None:
-            #nrea= tf.constant(preds.get_shape().as_list()[1],tf.float32)
-            nrea= tf.cast(tf.shape(preds)[1],tf.float32)
+            #nrea= tf.constant(preds.get_shape().as_list()[1],PRECISION)
+            nrea= tf.cast(tf.shape(preds)[1],PRECISION)
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
             masked_preds=(1+preds)*mask
             #masked_preds=(0.5+preds)*mask
@@ -163,7 +164,7 @@ def nll(targets, pred_distribution , mask=None):
         targets=tf.reshape(targets, tf.shape(targets)[:2])
         if mask is not None:
             mask=tf.keras.backend.sum(mask, axis=2, keepdims=False)
-            nrea=tf.cast(tf.shape(mask)[1], tf.float32)
+            nrea=tf.cast(tf.shape(mask)[1], PRECISION)
             mask_factor=nrea/tf.keras.backend.sum(mask, axis=1, keepdims=True)
             nll=-pred_distribution.log_prob(targets)
             NLL=mask_factor*mask*nll            
@@ -175,13 +176,13 @@ def nll(targets, pred_distribution , mask=None):
         if mask is not None:
             #assert tf.shape(pred_distribution)[0]==tf.shape(mask)[0]
         
-            nrea=tf.cast(tf.shape(mask)[1], tf.float32)
+            nrea=tf.cast(tf.shape(mask)[1], PRECISION)
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
             nll=tf.reshape(-pred_distribution.log_prob(targets),tf.shape(mask))
             NLL=mask_factor*mask*nll
             
             '''
-            npoints=tf.cast(tf.shape(mask)[0]*tf.shape(mask)[1], tf.float32)
+            npoints=tf.cast(tf.shape(mask)[0]*tf.shape(mask)[1], PRECISION)
             mask_factor=npoints/tf.keras.backend.sum(mask)
             nll=tf.reshape(-pred_distribution.log_prob(targets),tf.shape(mask))
             NLL=mask_factor*mask*nll

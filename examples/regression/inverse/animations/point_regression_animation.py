@@ -174,7 +174,6 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
                                                      save_best_only= True,
                                                      verbose=1, 
                                                      save_freq='epoch')
-    print("HOLA")
     
     print(cp_callback.best)
 
