@@ -7,7 +7,7 @@ version = "0.0.1"
 authors = [
   { name="Andres Navarro Alsina", email="a.navarro.alsina@gmail.com" },
 ]
-description = "Basic modules for ML model based on TensorFlow"
+description = "Toolkit for creating ML models using tensorflow. Designed to short-cut implementation of widely used neuronal networks architectures."
 readme = "README.md"
 requires-python = ">=3.6"
 classifiers = [

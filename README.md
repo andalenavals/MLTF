@@ -1,5 +1,5 @@
 # MLTF
-Toolkit for creating ML models using tensorflow.
+Toolkit for creating ML models using tensorflow. Designed to short-cut implementation of widely used neuronal networks architectures.
 
 ## How to install 
 `$ pip install -v git+https://github.com/andalenavals/MLTF`
@@ -17,3 +17,6 @@ Toolkit for creating ML models using tensorflow.
 ## Basic Usage
 
 See `examples`
+
+## Documentation
+`https://andalenavals.github.io/mltfdocs/`
