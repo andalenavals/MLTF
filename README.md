@@ -19,4 +19,4 @@ Toolkit for creating ML models using tensorflow. Designed to short-cut implement
 See `examples`
 
 ## Documentation
-`https://andalenavals.github.io/mltfdocs/`
+[https://andalenavals.github.io/mltfdocs/](https://andalenavals.github.io/mltfdocs/)
