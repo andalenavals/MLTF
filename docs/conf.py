@@ -26,11 +26,19 @@ extensions = [
     'sphinx_rtd_theme',
     'myst_parser']
 
-source_suffix=['.rst','.md']
+#source_suffix=['.rst','.md']
+source_suffix = '.rst'
+
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+# The name of the Pygments (syntax highlighting) style to use.
+pygments_style = 'sphinx'
+
+# The reST default role (used for this markup: `text`) to use for all
+# documents.
+default_role = 'any'
 
 
 # -- Options for HTML output -------------------------------------------------

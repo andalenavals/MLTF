@@ -247,8 +247,8 @@ The same layer can be reinstantiated later
 (without its trained weights) from this configuration.</p>
 <p>The config of a layer does not include connectivity
 information, nor the layer class name. These are handled
-by <cite>Network</cite> (one layer of abstraction above).</p>
-<p>Note that <cite>get_config()</cite> does not guarantee to return a fresh copy of
+by <code class="xref any docutils literal notranslate"><span class="pre">Network</span></code> (one layer of abstraction above).</p>
+<p>Note that <a class="reference internal" href="#MLTF.layer.TfbilacLayer.get_config" title="MLTF.layer.TfbilacLayer.get_config"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">get_config()</span></code></a> does not guarantee to return a fresh copy of
 dict every time it is called. The callers should make a copy of the
 returned dict if they want to modify it.</p>
 <dl class="field-list simple">
@@ -453,7 +453,7 @@ Author: Andres Navarro</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="MLTF.tools.BCP.on_batch_end">
 <span class="sig-name descname"><span class="pre">on_batch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/tools.html#BCP.on_batch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.tools.BCP.on_batch_end" title="Permalink to this definition"></a></dt>
-<dd><p>A backwards compatibility alias for <cite>on_train_batch_end</cite>.</p>
+<dd><p>A backwards compatibility alias for <a class="reference internal" href="#MLTF.tools.BCP2.on_train_batch_end" title="MLTF.tools.BCP2.on_train_batch_end"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">on_train_batch_end</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -488,11 +488,11 @@ method but that may change in the future.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="MLTF.tools.BCP2.on_train_batch_end">
 <span class="sig-name descname"><span class="pre">on_train_batch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/tools.html#BCP2.on_train_batch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.tools.BCP2.on_train_batch_end" title="Permalink to this definition"></a></dt>
-<dd><p>Called at the end of a training batch in <cite>fit</cite> methods.</p>
+<dd><p>Called at the end of a training batch in <code class="xref any docutils literal notranslate"><span class="pre">fit</span></code> methods.</p>
 <p>Subclasses should override for any actions to run.</p>
-<p>Note that if the <cite>steps_per_execution</cite> argument to <cite>compile</cite> in
-<cite>tf.keras.Model</cite> is set to <cite>N</cite>, this method will only be called every
-<cite>N</cite> batches.</p>
+<p>Note that if the <code class="xref any docutils literal notranslate"><span class="pre">steps_per_execution</span></code> argument to <code class="xref any docutils literal notranslate"><span class="pre">compile</span></code> in
+<code class="xref any docutils literal notranslate"><span class="pre">tf.keras.Model</span></code> is set to <code class="xref any docutils literal notranslate"><span class="pre">N</span></code>, this method will only be called every
+<code class="xref any docutils literal notranslate"><span class="pre">N</span></code> batches.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
