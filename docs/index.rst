@@ -14,6 +14,11 @@ Welcome to MLTF's documentation!
    installation
    MLTF
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Examples:
+
+   regression
 
 
 Indices and tables
