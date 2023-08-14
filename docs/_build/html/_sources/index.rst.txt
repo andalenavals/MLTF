@@ -11,6 +11,8 @@ Welcome to MLTF's documentation!
    :caption: Contents:
 	     
    modules
+   installation
+   MLTF
 
 
 Indices and tables
