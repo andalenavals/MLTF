@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Installation &mdash; MLTF v0.1.1 documentation</title>
+  <title>Regressions &mdash; MLTF v0.1.1 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -65,9 +65,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Installation</li>
+      <li class="breadcrumb-item active">Regressions</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/d.md.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/regression.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -75,27 +75,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
-<p>MLTF is fully python implemented. Stable realease can be installed using PyPy</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install MLTF
-</pre></div>
-</div>
-<p>latest develop version can be installed importing directly in your PYTHONPATH, or via PyPy:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pip install -v git+https://github.com/andalenavals/MLTF
-</pre></div>
-</div>
-<section id="running-tests">
-<h2>Running tests<a class="headerlink" href="#running-tests" title="Permalink to this heading"></a></h2>
-<p>In the <code class="docutils literal notranslate"><span class="pre">tests</span></code> directory type:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pytest
-</pre></div>
-</div>
-<p>to show intermediate outputs try:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pytest -rP
-</pre></div>
-</div>
+  <section id="regressions">
+<h1>Regressions<a class="headerlink" href="#regressions" title="Permalink to this heading"></a></h1>
+<p>In this example, a simple network is created to inverse regress the function $$f(x)=sqrt(1.0+x**2)$$, where 3D mock data is created adding noise to $$f(x)$$, the structure of the data is (ncases, nreas, nfeats). Where ncases is the number of targets values, nreas is the number of realizations associated to different draws of the noise, and nfeats is the number of features. In these examples two options can be tested, using as training features only $$f(x)+n$$, or $$f(x)+n$$ and $$n$$.</p>
 </section>
+<section id="point-estimate-inverse-regression">
+<h1>Point estimate inverse regression<a class="headerlink" href="#point-estimate-inverse-regression" title="Permalink to this heading"></a></h1>
 </section>
 
 

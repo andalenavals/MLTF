@@ -14,7 +14,7 @@
 #
 
 """
-File: ML_Tensorflow/examples/regression/inverse/noise_regression.py
+File: MLTF/examples/regression/inverse/noise_regression.py
 
 Created on: 13/09/22
 Author: Andres Navarro
