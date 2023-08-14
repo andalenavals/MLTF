@@ -6,11 +6,12 @@
 Welcome to MLTF's documentation!
 ================================
 
+MLTF (Machine Learning with TensorFlow) is a software to create and train fully connected neuronal networks, based on TensorFlow.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 	     
-   modules
    installation
    MLTF
 
