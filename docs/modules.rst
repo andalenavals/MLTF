@@ -5,3 +5,4 @@ MLTF
    :maxdepth: 4
 
    MLTF
+   installation
