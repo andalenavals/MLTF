@@ -9,12 +9,22 @@
 project = 'MLTF'
 copyright = '2023, Andres Navarro'
 author = 'Andres Navarro'
+version = '0.1.1'
 release = 'v0.1.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["sphinx.ext.todo","sphinx.ext.viewcode","sphinx.ext.autodoc",'sphinx_rtd_theme', "myst_parser"]
+extensions = [
+    "sphinx.ext.todo",
+    'sphinx.ext.mathjax',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.autosectionlabel',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.coverage',
+    "sphinx.ext.autodoc",
+    'sphinx_rtd_theme',
+    'myst_parser']
 
 source_suffix=['.rst','.md']
 

@@ -19,8 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Installation" href="installation.html" />
-    <link rel="prev" title="MLTF" href="modules.html" /> 
+    <link rel="prev" title="Installation" href="installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -34,6 +33,9 @@
           <a href="index.html" class="icon icon-home">
             MLTF
           </a>
+              <div class="version">
+                0.1.1
+              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -44,72 +46,91 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">MLTF</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">MLTF package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.calc">MLTF.calc module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.calc.linreg"><code class="docutils literal notranslate"><span class="pre">linreg()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.calc.rmsd"><code class="docutils literal notranslate"><span class="pre">rmsd()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.calc.rmsd_delta"><code class="docutils literal notranslate"><span class="pre">rmsd_delta()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#running-tests">Running tests</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MLTF package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-MLTF.calc">MLTF.calc module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.calc.linreg"><code class="docutils literal notranslate"><span class="pre">linreg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.calc.rmsd"><code class="docutils literal notranslate"><span class="pre">rmsd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.calc.rmsd_delta"><code class="docutils literal notranslate"><span class="pre">rmsd_delta()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.info">MLTF.info module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.info.info"><code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-MLTF.info">MLTF.info module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.info.info"><code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.layer">MLTF.layer module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.layer.TfbilacLayer"><code class="docutils literal notranslate"><span class="pre">TfbilacLayer</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-MLTF.layer">MLTF.layer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.layer.TfbilacLayer"><code class="docutils literal notranslate"><span class="pre">TfbilacLayer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.layer.TfbilacLayer.build"><code class="docutils literal notranslate"><span class="pre">TfbilacLayer.build()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.layer.TfbilacLayer.call"><code class="docutils literal notranslate"><span class="pre">TfbilacLayer.call()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.layer.TfbilacLayer.compute_output_shape"><code class="docutils literal notranslate"><span class="pre">TfbilacLayer.compute_output_shape()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.layer.TfbilacLayer.get_config"><code class="docutils literal notranslate"><span class="pre">TfbilacLayer.get_config()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.loss_functions">MLTF.loss_functions module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.msb"><code class="docutils literal notranslate"><span class="pre">msb()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.mse"><code class="docutils literal notranslate"><span class="pre">mse()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.msmb"><code class="docutils literal notranslate"><span class="pre">msmb()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.mswb"><code class="docutils literal notranslate"><span class="pre">mswb()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.mswb_lagrange1"><code class="docutils literal notranslate"><span class="pre">mswb_lagrange1()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.mswb_lagrange2"><code class="docutils literal notranslate"><span class="pre">mswb_lagrange2()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.mswcb"><code class="docutils literal notranslate"><span class="pre">mswcb()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.nll"><code class="docutils literal notranslate"><span class="pre">nll()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.models">MLTF.models module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.create_bayesian_model"><code class="docutils literal notranslate"><span class="pre">create_bayesian_model()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.create_model"><code class="docutils literal notranslate"><span class="pre">create_model()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.create_mw_model"><code class="docutils literal notranslate"><span class="pre">create_mw_model()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.create_probabilistic_model_independentnormal"><code class="docutils literal notranslate"><span class="pre">create_probabilistic_model_independentnormal()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.create_probabilistic_model_mixturenormal"><code class="docutils literal notranslate"><span class="pre">create_probabilistic_model_mixturenormal()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.get_bayesian_model"><code class="docutils literal notranslate"><span class="pre">get_bayesian_model()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.get_model"><code class="docutils literal notranslate"><span class="pre">get_model()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.posterior"><code class="docutils literal notranslate"><span class="pre">posterior()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.prior"><code class="docutils literal notranslate"><span class="pre">prior()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-MLTF.loss_functions">MLTF.loss_functions module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.loss_functions.msb"><code class="docutils literal notranslate"><span class="pre">msb()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.loss_functions.mse"><code class="docutils literal notranslate"><span class="pre">mse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.loss_functions.msmb"><code class="docutils literal notranslate"><span class="pre">msmb()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.loss_functions.mswb"><code class="docutils literal notranslate"><span class="pre">mswb()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.loss_functions.mswb_lagrange1"><code class="docutils literal notranslate"><span class="pre">mswb_lagrange1()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.loss_functions.mswb_lagrange2"><code class="docutils literal notranslate"><span class="pre">mswb_lagrange2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.loss_functions.mswcb"><code class="docutils literal notranslate"><span class="pre">mswcb()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.loss_functions.nll"><code class="docutils literal notranslate"><span class="pre">nll()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.normer">MLTF.normer module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.normer.Normer"><code class="docutils literal notranslate"><span class="pre">Normer</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.normer.tileToShape"><code class="docutils literal notranslate"><span class="pre">tileToShape()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-MLTF.models">MLTF.models module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.models.create_bayesian_model"><code class="docutils literal notranslate"><span class="pre">create_bayesian_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.models.create_model"><code class="docutils literal notranslate"><span class="pre">create_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.models.create_mw_model"><code class="docutils literal notranslate"><span class="pre">create_mw_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.models.create_probabilistic_model_independentnormal"><code class="docutils literal notranslate"><span class="pre">create_probabilistic_model_independentnormal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.models.create_probabilistic_model_mixturenormal"><code class="docutils literal notranslate"><span class="pre">create_probabilistic_model_mixturenormal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.models.get_bayesian_model"><code class="docutils literal notranslate"><span class="pre">get_bayesian_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.models.get_model"><code class="docutils literal notranslate"><span class="pre">get_model()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.models.posterior"><code class="docutils literal notranslate"><span class="pre">posterior()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.models.prior"><code class="docutils literal notranslate"><span class="pre">prior()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.plot">MLTF.plot module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.color_plot"><code class="docutils literal notranslate"><span class="pre">color_plot()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.color_plot_ax"><code class="docutils literal notranslate"><span class="pre">color_plot_ax()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.plot_bias"><code class="docutils literal notranslate"><span class="pre">plot_bias()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.plot_correlation_matrix"><code class="docutils literal notranslate"><span class="pre">plot_correlation_matrix()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.plot_history"><code class="docutils literal notranslate"><span class="pre">plot_history()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.plot_history_ax"><code class="docutils literal notranslate"><span class="pre">plot_history_ax()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.plotcorrmat"><code class="docutils literal notranslate"><span class="pre">plotcorrmat()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-MLTF.normer">MLTF.normer module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.normer.Normer"><code class="docutils literal notranslate"><span class="pre">Normer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.normer.Normer.denorm"><code class="docutils literal notranslate"><span class="pre">Normer.denorm()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.tools">MLTF.tools module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.BCP"><code class="docutils literal notranslate"><span class="pre">BCP</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.BCP2"><code class="docutils literal notranslate"><span class="pre">BCP2</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.check_history"><code class="docutils literal notranslate"><span class="pre">check_history()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.check_history_batch"><code class="docutils literal notranslate"><span class="pre">check_history_batch()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.normer.tileToShape"><code class="docutils literal notranslate"><span class="pre">tileToShape()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-MLTF">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-MLTF.plot">MLTF.plot module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.plot.color_plot"><code class="docutils literal notranslate"><span class="pre">color_plot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.plot.color_plot_ax"><code class="docutils literal notranslate"><span class="pre">color_plot_ax()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.plot.plot_bias"><code class="docutils literal notranslate"><span class="pre">plot_bias()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.plot.plot_correlation_matrix"><code class="docutils literal notranslate"><span class="pre">plot_correlation_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.plot.plot_history"><code class="docutils literal notranslate"><span class="pre">plot_history()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.plot.plot_history_ax"><code class="docutils literal notranslate"><span class="pre">plot_history_ax()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.plot.plotcorrmat"><code class="docutils literal notranslate"><span class="pre">plotcorrmat()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-MLTF.tools">MLTF.tools module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.tools.BCP"><code class="docutils literal notranslate"><span class="pre">BCP</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.BCP.batch_loss"><code class="docutils literal notranslate"><span class="pre">BCP.batch_loss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.BCP.on_batch_end"><code class="docutils literal notranslate"><span class="pre">BCP.on_batch_end()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.BCP.on_train_begin"><code class="docutils literal notranslate"><span class="pre">BCP.on_train_begin()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.tools.BCP2"><code class="docutils literal notranslate"><span class="pre">BCP2</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.BCP2.batch_accuracy"><code class="docutils literal notranslate"><span class="pre">BCP2.batch_accuracy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.BCP2.batch_loss"><code class="docutils literal notranslate"><span class="pre">BCP2.batch_loss</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.BCP2.on_train_batch_end"><code class="docutils literal notranslate"><span class="pre">BCP2.on_train_batch_end()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.BCP2.on_train_begin"><code class="docutils literal notranslate"><span class="pre">BCP2.on_train_begin()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.tools.check_history"><code class="docutils literal notranslate"><span class="pre">check_history()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#MLTF.tools.check_history_batch"><code class="docutils literal notranslate"><span class="pre">check_history_batch()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-MLTF">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -128,7 +149,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">MLTF</a></li>
       <li class="breadcrumb-item active">MLTF package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/MLTF.rst.txt" rel="nofollow"> View page source</a>
@@ -231,8 +251,9 @@ by <cite>Network</cite> (one layer of abstraction above).</p>
 <p>Note that <cite>get_config()</cite> does not guarantee to return a fresh copy of
 dict every time it is called. The callers should make a copy of the
 returned dict if they want to modify it.</p>
-<dl class="simple">
-<dt>Returns:</dt><dd><p>Python dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Python dictionary.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -440,11 +461,10 @@ Author: Andres Navarro</p>
 <span class="sig-name descname"><span class="pre">on_train_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/tools.html#BCP.on_train_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.tools.BCP.on_train_begin" title="Permalink to this definition"></a></dt>
 <dd><p>Called at the beginning of training.</p>
 <p>Subclasses should override for any actions to run.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>logs: Dict. Currently no data is passed to this argument for this</dt><dd><p>method but that may change in the future.</p>
-</dd>
-</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>logs</strong> – Dict. Currently no data is passed to this argument for this
+method but that may change in the future.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -473,9 +493,12 @@ Author: Andres Navarro</p>
 <p>Note that if the <cite>steps_per_execution</cite> argument to <cite>compile</cite> in
 <cite>tf.keras.Model</cite> is set to <cite>N</cite>, this method will only be called every
 <cite>N</cite> batches.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><p>batch: Integer, index of batch within the current epoch.
-logs: Dict. Aggregated metric results up until this batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch</strong> – Integer, index of batch within the current epoch.</p></li>
+<li><p><strong>logs</strong> – Dict. Aggregated metric results up until this batch.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -485,11 +508,10 @@ logs: Dict. Aggregated metric results up until this batch.</p>
 <span class="sig-name descname"><span class="pre">on_train_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/tools.html#BCP2.on_train_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.tools.BCP2.on_train_begin" title="Permalink to this definition"></a></dt>
 <dd><p>Called at the beginning of training.</p>
 <p>Subclasses should override for any actions to run.</p>
-<dl class="simple">
-<dt>Args:</dt><dd><dl class="simple">
-<dt>logs: Dict. Currently no data is passed to this argument for this</dt><dd><p>method but that may change in the future.</p>
-</dd>
-</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>logs</strong> – Dict. Currently no data is passed to this argument for this
+method but that may change in the future.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -516,8 +538,7 @@ logs: Dict. Aggregated metric results up until this batch.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="modules.html" class="btn btn-neutral float-left" title="MLTF" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
