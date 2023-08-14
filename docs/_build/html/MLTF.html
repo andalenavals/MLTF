@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MLTF package &mdash; MLTF v0.1.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="MLTF" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            MLTF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">MLTF</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">MLTF package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.calc">MLTF.calc module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.calc.linreg"><code class="docutils literal notranslate"><span class="pre">linreg()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.calc.rmsd"><code class="docutils literal notranslate"><span class="pre">rmsd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.calc.rmsd_delta"><code class="docutils literal notranslate"><span class="pre">rmsd_delta()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.info">MLTF.info module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.info.info"><code class="docutils literal notranslate"><span class="pre">info()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.layer">MLTF.layer module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.layer.TfbilacLayer"><code class="docutils literal notranslate"><span class="pre">TfbilacLayer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.loss_functions">MLTF.loss_functions module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.msb"><code class="docutils literal notranslate"><span class="pre">msb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.mse"><code class="docutils literal notranslate"><span class="pre">mse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.msmb"><code class="docutils literal notranslate"><span class="pre">msmb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.mswb"><code class="docutils literal notranslate"><span class="pre">mswb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.mswb_lagrange1"><code class="docutils literal notranslate"><span class="pre">mswb_lagrange1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.mswb_lagrange2"><code class="docutils literal notranslate"><span class="pre">mswb_lagrange2()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.mswcb"><code class="docutils literal notranslate"><span class="pre">mswcb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.loss_functions.nll"><code class="docutils literal notranslate"><span class="pre">nll()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.models">MLTF.models module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.create_bayesian_model"><code class="docutils literal notranslate"><span class="pre">create_bayesian_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.create_model"><code class="docutils literal notranslate"><span class="pre">create_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.create_mw_model"><code class="docutils literal notranslate"><span class="pre">create_mw_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.create_probabilistic_model_independentnormal"><code class="docutils literal notranslate"><span class="pre">create_probabilistic_model_independentnormal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.create_probabilistic_model_mixturenormal"><code class="docutils literal notranslate"><span class="pre">create_probabilistic_model_mixturenormal()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.get_bayesian_model"><code class="docutils literal notranslate"><span class="pre">get_bayesian_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.get_model"><code class="docutils literal notranslate"><span class="pre">get_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.posterior"><code class="docutils literal notranslate"><span class="pre">posterior()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.models.prior"><code class="docutils literal notranslate"><span class="pre">prior()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.normer">MLTF.normer module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.normer.Normer"><code class="docutils literal notranslate"><span class="pre">Normer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.normer.tileToShape"><code class="docutils literal notranslate"><span class="pre">tileToShape()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.plot">MLTF.plot module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.color_plot"><code class="docutils literal notranslate"><span class="pre">color_plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.color_plot_ax"><code class="docutils literal notranslate"><span class="pre">color_plot_ax()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.plot_bias"><code class="docutils literal notranslate"><span class="pre">plot_bias()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.plot_correlation_matrix"><code class="docutils literal notranslate"><span class="pre">plot_correlation_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.plot_history"><code class="docutils literal notranslate"><span class="pre">plot_history()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.plot_history_ax"><code class="docutils literal notranslate"><span class="pre">plot_history_ax()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.plot.plotcorrmat"><code class="docutils literal notranslate"><span class="pre">plotcorrmat()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-MLTF.tools">MLTF.tools module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.BCP"><code class="docutils literal notranslate"><span class="pre">BCP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.BCP2"><code class="docutils literal notranslate"><span class="pre">BCP2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.check_history"><code class="docutils literal notranslate"><span class="pre">check_history()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#MLTF.tools.check_history_batch"><code class="docutils literal notranslate"><span class="pre">check_history_batch()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-MLTF">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MLTF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">MLTF</a></li>
+      <li class="breadcrumb-item active">MLTF package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/MLTF.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="mltf-package">
+<h1>MLTF package<a class="headerlink" href="#mltf-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-MLTF.calc">
+<span id="mltf-calc-module"></span><h2>MLTF.calc module<a class="headerlink" href="#module-MLTF.calc" title="Permalink to this heading"></a></h2>
+<p>File: MLTF/python/calc.py</p>
+<p>Created on: 13/09/22
+Author: Andres Navarro</p>
+<p>A module to hold some maths or statistics oriented functions woring on numpy arrays.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.calc.linreg">
+<span class="sig-prename descclassname"><span class="pre">MLTF.calc.</span></span><span class="sig-name descname"><span class="pre">linreg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.68</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/calc.html#linreg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.calc.linreg" title="Permalink to this definition"></a></dt>
+<dd><p>A linear regression y = m*x + c, with confidence intervals on m and c.</p>
+<p>As a safety measure, this function will refuse to work on masked arrays.
+Indeed scipy.stats.linregress() seems to silently disregard masks…
+… and as a safety measure, we compare against scipy.stats.linregress().</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.calc.rmsd">
+<span class="sig-prename descclassname"><span class="pre">MLTF.calc.</span></span><span class="sig-name descname"><span class="pre">rmsd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/calc.html#rmsd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.calc.rmsd" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the RMSD between two numpy arrays
+(only beginners tend to inexactly call this the RMS… ;-)</p>
+<p><a class="reference external" href="http://en.wikipedia.org/wiki/Root-mean-square_deviation">http://en.wikipedia.org/wiki/Root-mean-square_deviation</a></p>
+<p>This function also works as expected on masked arrays.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.calc.rmsd_delta">
+<span class="sig-prename descclassname"><span class="pre">MLTF.calc.</span></span><span class="sig-name descname"><span class="pre">rmsd_delta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/calc.html#rmsd_delta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.calc.rmsd_delta" title="Permalink to this definition"></a></dt>
+<dd><p>Idem, but directly takes the estimation errors.
+Useful, e.g., to pass as reduce_C_function for hexbin plots.</p>
+</dd></dl>
+
+</section>
+<section id="module-MLTF.info">
+<span id="mltf-info-module"></span><h2>MLTF.info module<a class="headerlink" href="#module-MLTF.info" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.info.info">
+<span class="sig-prename descclassname"><span class="pre">MLTF.info.</span></span><span class="sig-name descname"><span class="pre">info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/info.html#info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.info.info" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-MLTF.layer">
+<span id="mltf-layer-module"></span><h2>MLTF.layer module<a class="headerlink" href="#module-MLTF.layer" title="Permalink to this heading"></a></h2>
+<p>File: MLTF/python/layer.py</p>
+<p>Created on: 13/09/22
+Author: Andres Navarro</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="MLTF.layer.TfbilacLayer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">MLTF.layer.</span></span><span class="sig-name descname"><span class="pre">TfbilacLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/layer.html#TfbilacLayer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.layer.TfbilacLayer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></p>
+<p>A custom dense layer handling cases and realizations and masks</p>
+<p>Inspiration:</p>
+<p><a class="reference external" href="https://keras.io/layers/core/">https://keras.io/layers/core/</a>
+(for Maskign core layer!)</p>
+<p><a class="reference external" href="https://keras.io/layers/writing-your-own-keras-layers/">https://keras.io/layers/writing-your-own-keras-layers/</a>
+(see for multiple inputs!)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="MLTF.layer.TfbilacLayer.build">
+<span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/layer.html#TfbilacLayer.build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.layer.TfbilacLayer.build" title="Permalink to this definition"></a></dt>
+<dd><p>input_shape is (ncase, nrea, nfeat)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="MLTF.layer.TfbilacLayer.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/layer.html#TfbilacLayer.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.layer.TfbilacLayer.call" title="Permalink to this definition"></a></dt>
+<dd><p>Input is (ncase, nrea, nfeat), kernel is (nfeat, nout)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="MLTF.layer.TfbilacLayer.compute_output_shape">
+<span class="sig-name descname"><span class="pre">compute_output_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/layer.html#TfbilacLayer.compute_output_shape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.layer.TfbilacLayer.compute_output_shape" title="Permalink to this definition"></a></dt>
+<dd><p>Returns (ncase, nrea, nout)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="MLTF.layer.TfbilacLayer.get_config">
+<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/layer.html#TfbilacLayer.get_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.layer.TfbilacLayer.get_config" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the config of the layer.</p>
+<p>A layer config is a Python dictionary (serializable)
+containing the configuration of a layer.
+The same layer can be reinstantiated later
+(without its trained weights) from this configuration.</p>
+<p>The config of a layer does not include connectivity
+information, nor the layer class name. These are handled
+by <cite>Network</cite> (one layer of abstraction above).</p>
+<p>Note that <cite>get_config()</cite> does not guarantee to return a fresh copy of
+dict every time it is called. The callers should make a copy of the
+returned dict if they want to modify it.</p>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>Python dictionary.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-MLTF.loss_functions">
+<span id="mltf-loss-functions-module"></span><h2>MLTF.loss_functions module<a class="headerlink" href="#module-MLTF.loss_functions" title="Permalink to this heading"></a></h2>
+<p>File: MLTF/python/loss_functions.py</p>
+<p>Created on: 13/09/22
+Author: Andres Navarro</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.loss_functions.msb">
+<span class="sig-prename descclassname"><span class="pre">MLTF.loss_functions.</span></span><span class="sig-name descname"><span class="pre">msb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">caseweights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/loss_functions.html#msb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.loss_functions.msb" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.loss_functions.mse">
+<span class="sig-prename descclassname"><span class="pre">MLTF.loss_functions.</span></span><span class="sig-name descname"><span class="pre">mse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/loss_functions.html#mse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.loss_functions.mse" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.loss_functions.msmb">
+<span class="sig-prename descclassname"><span class="pre">MLTF.loss_functions.</span></span><span class="sig-name descname"><span class="pre">msmb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/loss_functions.html#msmb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.loss_functions.msmb" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.loss_functions.mswb">
+<span class="sig-prename descclassname"><span class="pre">MLTF.loss_functions.</span></span><span class="sig-name descname"><span class="pre">mswb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/loss_functions.html#mswb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.loss_functions.mswb" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.loss_functions.mswb_lagrange1">
+<span class="sig-prename descclassname"><span class="pre">MLTF.loss_functions.</span></span><span class="sig-name descname"><span class="pre">mswb_lagrange1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/loss_functions.html#mswb_lagrange1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.loss_functions.mswb_lagrange1" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.loss_functions.mswb_lagrange2">
+<span class="sig-prename descclassname"><span class="pre">MLTF.loss_functions.</span></span><span class="sig-name descname"><span class="pre">mswb_lagrange2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/loss_functions.html#mswb_lagrange2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.loss_functions.mswb_lagrange2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.loss_functions.mswcb">
+<span class="sig-prename descclassname"><span class="pre">MLTF.loss_functions.</span></span><span class="sig-name descname"><span class="pre">mswcb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/loss_functions.html#mswcb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.loss_functions.mswcb" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.loss_functions.nll">
+<span class="sig-prename descclassname"><span class="pre">MLTF.loss_functions.</span></span><span class="sig-name descname"><span class="pre">nll</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_distribution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/loss_functions.html#nll"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.loss_functions.nll" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-MLTF.models">
+<span id="mltf-models-module"></span><h2>MLTF.models module<a class="headerlink" href="#module-MLTF.models" title="Permalink to this heading"></a></h2>
+<p>File: MLTF/python/models.py</p>
+<p>Created on: 13/09/22
+Author: Andres Navarro</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.models.create_bayesian_model">
+<span class="sig-prename descclassname"><span class="pre">MLTF.models.</span></span><span class="sig-name descname"><span class="pre">create_bayesian_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_sizes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(5,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_activation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'msb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_caseweights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kl_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'float32'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/models.html#create_bayesian_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.models.create_bayesian_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.models.create_model">
+<span class="sig-prename descclassname"><span class="pre">MLTF.models.</span></span><span class="sig-name descname"><span class="pre">create_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_sizes=(5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer=&lt;class</span> <span class="pre">'MLTF.layer.TfbilacLayer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation='sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_activation=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_name='msb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_mask=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_caseweights=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_prob=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype='float32'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/models.html#create_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.models.create_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.models.create_mw_model">
+<span class="sig-prename descclassname"><span class="pre">MLTF.models.</span></span><span class="sig-name descname"><span class="pre">create_mw_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape_w=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_sizes_w=(5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_w=&lt;class</span> <span class="pre">'MLTF.layer.TfbilacLayer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation_w='sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_activation_w=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_shape_m=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_sizes_m=(5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_m=&lt;class</span> <span class="pre">'MLTF.layer.TfbilacLayer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation_m='sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_activation_m='sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_name='mswcb'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_mask=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype='float32'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/models.html#create_mw_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.models.create_mw_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.models.create_probabilistic_model_independentnormal">
+<span class="sig-prename descclassname"><span class="pre">MLTF.models.</span></span><span class="sig-name descname"><span class="pre">create_probabilistic_model_independentnormal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_sizes=(5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer=&lt;class</span> <span class="pre">'MLTF.layer.TfbilacLayer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation='sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_activation=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_name='nll'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_mask=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_caseweights=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype='float32'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/models.html#create_probabilistic_model_independentnormal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.models.create_probabilistic_model_independentnormal" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.models.create_probabilistic_model_mixturenormal">
+<span class="sig-prename descclassname"><span class="pre">MLTF.models.</span></span><span class="sig-name descname"><span class="pre">create_probabilistic_model_mixturenormal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_shape=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_sizes=(5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer=&lt;class</span> <span class="pre">'MLTF.layer.TfbilacLayer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation='sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_activation=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_name='nll'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncomp=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_mask=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_caseweights=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamb=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype='float32'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/models.html#create_probabilistic_model_mixturenormal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.models.create_probabilistic_model_mixturenormal" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.models.get_bayesian_model">
+<span class="sig-prename descclassname"><span class="pre">MLTF.models.</span></span><span class="sig-name descname"><span class="pre">get_bayesian_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden_sizes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(5,</span> <span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kl_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/models.html#get_bayesian_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.models.get_bayesian_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.models.get_model">
+<span class="sig-prename descclassname"><span class="pre">MLTF.models.</span></span><span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden_sizes=(5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">5)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation='sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer=&lt;class</span> <span class="pre">'MLTF.layer.TfbilacLayer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout_prob=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outnodes=1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/models.html#get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.models.get_model" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.models.posterior">
+<span class="sig-prename descclassname"><span class="pre">MLTF.models.</span></span><span class="sig-name descname"><span class="pre">posterior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/models.html#posterior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.models.posterior" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.models.prior">
+<span class="sig-prename descclassname"><span class="pre">MLTF.models.</span></span><span class="sig-name descname"><span class="pre">prior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kernel_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/models.html#prior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.models.prior" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-MLTF.normer">
+<span id="mltf-normer-module"></span><h2>MLTF.normer module<a class="headerlink" href="#module-MLTF.normer" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="MLTF.normer.Normer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">MLTF.normer.</span></span><span class="sig-name descname"><span class="pre">Normer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'-11'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/normer.html#Normer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.normer.Normer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A Normer provides methods to “normalize” and later “denormalize” a numpy array:
+- linearly rescaling it to be within 0 and 1 (type=”01”),
+- to be within -1 and 1 (type=”-11”),
+- around 0 with a std of 1 (type=”std”),
+- or just factor-scaling it so that the maximum absolute value is 1 (type=”sa1”).</p>
+<p>For each feature, the same normalization is applied to all realizations of all cases.
+The details of the normalization are kept in the Normer object, so that one can simply use the same
+object to denorm stuff afterwards.</p>
+<p>This works with 3D and 2D arrays, with indices (case, rea, feat)
+or (case, feat).</p>
+<p>All methods work with masked arrays: masked values are ignored
+when computing the normer parameters, and the mask itself is unchanged by
+norming or denorming.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="MLTF.normer.Normer.denorm">
+<span class="sig-name descname"><span class="pre">denorm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/normer.html#Normer.denorm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.normer.Normer.denorm" title="Permalink to this definition"></a></dt>
+<dd><p>Denorms the data</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.normer.tileToShape">
+<span class="sig-prename descclassname"><span class="pre">MLTF.normer.</span></span><span class="sig-name descname"><span class="pre">tileToShape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ab</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/normer.html#tileToShape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.normer.tileToShape" title="Permalink to this definition"></a></dt>
+<dd><ul class="simple">
+<li><p>ab: an array of shape (feat), typically holding the “a” and “b” terms of a normer.</p></li>
+<li><p>x: an array (case, rea, feat) or (case, feat) to which the ab-array should be inflated.</p></li>
+</ul>
+</dd></dl>
+
+</section>
+<section id="module-MLTF.plot">
+<span id="mltf-plot-module"></span><h2>MLTF.plot module<a class="headerlink" href="#module-MLTF.plot" title="Permalink to this heading"></a></h2>
+<p>File: MLTF/python/plot.py</p>
+<p>Created on: 13/09/22
+Author: Andres Navarro</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.plot.color_plot">
+<span class="sig-prename descclassname"><span class="pre">MLTF.plot.</span></span><span class="sig-name descname"><span class="pre">color_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colorlog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xtitle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ytitle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctitle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npoints_plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">linreg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xscalelog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yscalelog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yerr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_err</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sidehists</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sidehistxkwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sidehistykwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/plot.html#color_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.plot.color_plot" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.plot.color_plot_ax">
+<span class="sig-prename descclassname"><span class="pre">MLTF.plot.</span></span><span class="sig-name descname"><span class="pre">color_plot_ax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colorlog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xtitle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ytitle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctitle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/plot.html#color_plot_ax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.plot.color_plot_ax" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.plot.plot_bias">
+<span class="sig-prename descclassname"><span class="pre">MLTF.plot.</span></span><span class="sig-name descname"><span class="pre">plot_bias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meanpreds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">msbval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ylabel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/plot.html#plot_bias"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.plot.plot_bias" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.plot.plot_correlation_matrix">
+<span class="sig-prename descclassname"><span class="pre">MLTF.plot.</span></span><span class="sig-name descname"><span class="pre">plot_correlation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">my</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nbins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/plot.html#plot_correlation_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.plot.plot_correlation_matrix" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.plot.plot_history">
+<span class="sig-prename descclassname"><span class="pre">MLTF.plot.</span></span><span class="sig-name descname"><span class="pre">plot_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">history</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/plot.html#plot_history"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.plot.plot_history" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.plot.plot_history_ax">
+<span class="sig-prename descclassname"><span class="pre">MLTF.plot.</span></span><span class="sig-name descname"><span class="pre">plot_history_ax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ftsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">18</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xscalelog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yscalelog</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'training</span> <span class="pre">set'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/plot.html#plot_history_ax"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.plot.plot_history_ax" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.plot.plotcorrmat">
+<span class="sig-prename descclassname"><span class="pre">MLTF.plot.</span></span><span class="sig-name descname"><span class="pre">plotcorrmat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cov</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/plot.html#plotcorrmat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.plot.plotcorrmat" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-MLTF.tools">
+<span id="mltf-tools-module"></span><h2>MLTF.tools module<a class="headerlink" href="#module-MLTF.tools" title="Permalink to this heading"></a></h2>
+<p>File: MLTF/python/tools.py</p>
+<p>Created on: 13/09/22
+Author: Andres Navarro</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="MLTF.tools.BCP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">MLTF.tools.</span></span><span class="sig-name descname"><span class="pre">BCP</span></span><a class="reference internal" href="_modules/MLTF/tools.html#BCP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.tools.BCP" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="MLTF.tools.BCP.batch_loss">
+<span class="sig-name descname"><span class="pre">batch_loss</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#MLTF.tools.BCP.batch_loss" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="MLTF.tools.BCP.on_batch_end">
+<span class="sig-name descname"><span class="pre">on_batch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/tools.html#BCP.on_batch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.tools.BCP.on_batch_end" title="Permalink to this definition"></a></dt>
+<dd><p>A backwards compatibility alias for <cite>on_train_batch_end</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="MLTF.tools.BCP.on_train_begin">
+<span class="sig-name descname"><span class="pre">on_train_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/tools.html#BCP.on_train_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.tools.BCP.on_train_begin" title="Permalink to this definition"></a></dt>
+<dd><p>Called at the beginning of training.</p>
+<p>Subclasses should override for any actions to run.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>logs: Dict. Currently no data is passed to this argument for this</dt><dd><p>method but that may change in the future.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="MLTF.tools.BCP2">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">MLTF.tools.</span></span><span class="sig-name descname"><span class="pre">BCP2</span></span><a class="reference internal" href="_modules/MLTF/tools.html#BCP2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.tools.BCP2" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="MLTF.tools.BCP2.batch_accuracy">
+<span class="sig-name descname"><span class="pre">batch_accuracy</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#MLTF.tools.BCP2.batch_accuracy" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="MLTF.tools.BCP2.batch_loss">
+<span class="sig-name descname"><span class="pre">batch_loss</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#MLTF.tools.BCP2.batch_loss" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="MLTF.tools.BCP2.on_train_batch_end">
+<span class="sig-name descname"><span class="pre">on_train_batch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/tools.html#BCP2.on_train_batch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.tools.BCP2.on_train_batch_end" title="Permalink to this definition"></a></dt>
+<dd><p>Called at the end of a training batch in <cite>fit</cite> methods.</p>
+<p>Subclasses should override for any actions to run.</p>
+<p>Note that if the <cite>steps_per_execution</cite> argument to <cite>compile</cite> in
+<cite>tf.keras.Model</cite> is set to <cite>N</cite>, this method will only be called every
+<cite>N</cite> batches.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>batch: Integer, index of batch within the current epoch.
+logs: Dict. Aggregated metric results up until this batch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="MLTF.tools.BCP2.on_train_begin">
+<span class="sig-name descname"><span class="pre">on_train_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/tools.html#BCP2.on_train_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.tools.BCP2.on_train_begin" title="Permalink to this definition"></a></dt>
+<dd><p>Called at the beginning of training.</p>
+<p>Subclasses should override for any actions to run.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><dl class="simple">
+<dt>logs: Dict. Currently no data is passed to this argument for this</dt><dd><p>method but that may change in the future.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.tools.check_history">
+<span class="sig-prename descclassname"><span class="pre">MLTF.tools.</span></span><span class="sig-name descname"><span class="pre">check_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'loss'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reuse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/tools.html#check_history"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.tools.check_history" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="MLTF.tools.check_history_batch">
+<span class="sig-prename descclassname"><span class="pre">MLTF.tools.</span></span><span class="sig-name descname"><span class="pre">check_history_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reuse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/MLTF/tools.html#check_history_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#MLTF.tools.check_history_batch" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-MLTF">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-MLTF" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="MLTF" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Andres Navarro.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MLTF.calc &mdash; MLTF v0.1.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            MLTF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">MLTF</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MLTF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">MLTF.calc</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for MLTF.calc</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This library is free software; you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c1"># along with this library; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="c1"># 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">File: MLTF/python/calc.py</span>
+
+<span class="sd">Created on: 13/09/22</span>
+<span class="sd">Author: Andres Navarro</span>
+
+<span class="sd">A module to hold some maths or statistics oriented functions woring on numpy arrays.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="rmsd"><a class="viewcode-back" href="../../MLTF.html#MLTF.calc.rmsd">[docs]</a><span class="k">def</span> <span class="nf">rmsd</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">	</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Returns the RMSD between two numpy arrays</span>
+<span class="sd">	(only beginners tend to inexactly call this the RMS... ;-)</span>
+<span class="sd">	</span>
+<span class="sd">	http://en.wikipedia.org/wiki/Root-mean-square_deviation</span>
+<span class="sd">	</span>
+<span class="sd">	This function also works as expected on masked arrays.	</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mf">2.0</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="rmsd_delta"><a class="viewcode-back" href="../../MLTF.html#MLTF.calc.rmsd_delta">[docs]</a><span class="k">def</span> <span class="nf">rmsd_delta</span><span class="p">(</span><span class="n">delta</span><span class="p">):</span>
+<span class="w">	</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Idem, but directly takes the estimation errors.</span>
+<span class="sd">	Useful, e.g., to pass as reduce_C_function for hexbin plots.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span><span class="o">**</span><span class="mf">2.0</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="linreg"><a class="viewcode-back" href="../../MLTF.html#MLTF.calc.linreg">[docs]</a><span class="k">def</span> <span class="nf">linreg</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="mf">0.68</span><span class="p">):</span>
+<span class="w">	</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	A linear regression y = m*x + c, with confidence intervals on m and c.</span>
+<span class="sd">	</span>
+<span class="sd">	As a safety measure, this function will refuse to work on masked arrays.</span>
+<span class="sd">	Indeed scipy.stats.linregress() seems to silently disregard masks...</span>
+<span class="sd">	... and as a safety measure, we compare against scipy.stats.linregress().</span>
+<span class="sd">	</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+		<span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Your arrays x and y do not have the same size&quot;</span><span class="p">)</span>
+	
+	<span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">is_masked</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">is_masked</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+		<span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Do not give me masked arrays&quot;</span><span class="p">)</span>
+	
+	<span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+	<span class="n">xy</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span>
+	<span class="n">xx</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span>
+	
+	<span class="n">b1</span> <span class="o">=</span> <span class="p">(</span><span class="n">xy</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="n">y</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="n">xx</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+	<span class="n">b0</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">b1</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+	
+	<span class="c1">#s2 = 1./n * sum([(y[i] - b0 - b1 * x[i])**2 for i in xrange(n)])</span>
+	<span class="n">s2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">b0</span> <span class="o">-</span> <span class="n">b1</span> <span class="o">*</span> <span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+	
+	<span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">prob</span>
+	<span class="n">c1</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">chi2</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+	<span class="n">c2</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">chi2</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">alpha</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+	<span class="c1">#print &#39;the confidence interval of s2 is: &#39;,[n*s2/c2,n*s2/c1]</span>
+	
+	<span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">alpha</span><span class="o">/</span><span class="mf">2.</span><span class="p">,</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+	<span class="n">bb1</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">s2</span> <span class="o">/</span> <span class="p">((</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">xx</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span><span class="o">**</span><span class="mf">.5</span>
+	<span class="c1">#print &#39;the confidence interval of b1 is: &#39;,[b1-bb1,b1+bb1]</span>
+	
+	<span class="n">bb0</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="p">((</span><span class="n">s2</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">xx</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span><span class="o">**</span><span class="mf">.5</span>
+	<span class="c1">#print &#39;the confidence interval of b0 is: &#39;,[b0-bb0,b0+bb0]</span>
+	
+	<span class="n">ret</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;m&quot;</span><span class="p">:</span><span class="n">b1</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span><span class="n">b0</span><span class="p">,</span> <span class="s2">&quot;merr&quot;</span><span class="p">:</span><span class="n">bb1</span><span class="p">,</span> <span class="s2">&quot;cerr&quot;</span><span class="p">:</span><span class="n">bb0</span><span class="p">}</span>
+	
+	<span class="c1"># A little test (for recent numpy, one would use np.isclose() for this !)</span>
+	<span class="c1">#slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(x, y)</span>
+<span class="w">	</span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	if not abs(slope - b1) &lt;= 1e-6 * abs(slope):</span>
+<span class="sd">		raise RuntimeError(&quot;Slope error, %f, %f&quot; % (slope, b1))</span>
+<span class="sd">	if not abs(intercept - b0) &lt;= 1e-6 * abs(intercept):</span>
+<span class="sd">		raise RuntimeError(&quot;Intercept error, %f, %f&quot; % (intercept, b0))</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">return</span> <span class="n">ret</span></div>
+
+
+<span class="c1"># This function is unsufficiently documented, and the fact != a float is a joke (a bad one).</span>
+<span class="c1">#</span>
+<span class="c1">#def complex2geometrical(e1, e2, fact=1):</span>
+<span class="c1">#	&quot;&quot;&quot;</span>
+<span class="c1">#	Converts e1, e2 to a, b, theta</span>
+<span class="c1">#	&quot;&quot;&quot;</span>
+<span class="c1">#	e = np.sqrt(e1**2 + e2**2)</span>
+<span class="c1">#	if fact != 1:</span>
+<span class="c1">#		e = np.clip(e * fact, -0.9, 0.9)</span>
+<span class="c1">#	a = np.sqrt(1. + e)</span>
+<span class="c1">#	b = np.sqrt(1. - e )</span>
+<span class="c1">#	theta = np.arctan2(e2, e1) / 2.</span>
+<span class="c1">#	return a, b, theta</span>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Andres Navarro.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

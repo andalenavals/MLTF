@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MLTF.plot &mdash; MLTF v0.1.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            MLTF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">MLTF</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MLTF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">MLTF.plot</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for MLTF.plot</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This library is free software; you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation; either version 3.0 of the License, or (at your option)</span>
+<span class="c1"># any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This library is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c1"># along with this library; if not, write to the Free Software Foundation, Inc.,</span>
+<span class="c1"># 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">File: MLTF/python/plot.py</span>
+
+<span class="sd">Created on: 13/09/22</span>
+<span class="sd">Author: Andres Navarro</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">LogNorm</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">calc</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="c1"># plot function for history</span>
+<div class="viewcode-block" id="plot_history_ax"><a class="viewcode-back" href="../../MLTF.html#MLTF.plot.plot_history_ax">[docs]</a><span class="k">def</span> <span class="nf">plot_history_ax</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">ftsize</span><span class="o">=</span><span class="mi">18</span><span class="p">,</span> <span class="n">xscalelog</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">yscalelog</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;training set&#39;</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">xscalelog</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">yscalelog</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Model loss&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Epoch&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">ftsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Loss value&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">ftsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">ftsize</span><span class="o">-</span><span class="mi">6</span><span class="p">})</span></div>
+    
+    
+
+<div class="viewcode-block" id="plot_history"><a class="viewcode-back" href="../../MLTF.html#MLTF.plot.plot_history">[docs]</a><span class="k">def</span> <span class="nf">plot_history</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">history</span><span class="p">)</span><span class="o">!=</span><span class="nb">list</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">history</span><span class="p">)</span><span class="o">!=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">history</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">history</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;unable to read </span><span class="si">%s</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">history</span><span class="p">))</span>    
+            <span class="k">raise</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="nb">min</span><span class="p">(</span><span class="n">history</span><span class="p">),</span> <span class="mf">1.5</span><span class="o">*</span><span class="nb">max</span><span class="p">(</span><span class="n">history</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Model loss&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Loss&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Epoch&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;major&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="plot_bias"><a class="viewcode-back" href="../../MLTF.html#MLTF.plot.plot_bias">[docs]</a><span class="k">def</span> <span class="nf">plot_bias</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">meanpreds</span><span class="p">,</span> <span class="n">msbval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;ylabel&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">msbval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;min MSB: </span><span class="si">%.3e</span><span class="s2">&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">msbval</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">label</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">meanpreds</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;#d95f02&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$g_</span><span class="si">{1}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;major&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">markerscale</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">numpoints</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1">#plt.xlim(0.15, 2.1)</span>
+    <span class="c1">#plt.ylim(-0.01, 0.01)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+  
+
+<div class="viewcode-block" id="color_plot"><a class="viewcode-back" href="../../MLTF.html#MLTF.plot.color_plot">[docs]</a><span class="k">def</span> <span class="nf">color_plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">colorlog</span><span class="p">,</span><span class="n">xtitle</span><span class="p">,</span><span class="n">ytitle</span><span class="p">,</span><span class="n">ctitle</span><span class="p">,</span><span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ftsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span><span class="n">xlim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">npoints_plot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">linreg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">xscalelog</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">yscalelog</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">alpha_err</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">sidehists</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sidehistxkwargs</span><span class="o">=</span><span class="p">{},</span> <span class="n">sidehistykwargs</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="kn">from</span> <span class="nn">matplotlib.ticker</span> <span class="kn">import</span> <span class="n">StrMethodFormatter</span><span class="p">,</span> <span class="n">ScalarFormatter</span>
+
+    <span class="c1">#plt.gca().yaxis.set_major_formatter(StrMethodFormatter(&#39;{x:,2.f}&#39;))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">ScalarFormatter</span><span class="p">(</span><span class="n">useMathText</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">ScalarFormatter</span><span class="p">(</span><span class="n">useMathText</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+  
+    <span class="k">if</span> <span class="p">(</span><span class="n">npoints_plot</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span> <span class="n">npoints_plot</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">npoints_plot</span><span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span> <span class="n">npoints_plot</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">inds</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))],</span><span class="n">npoints_plot</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;using </span><span class="si">%i</span><span class="s2"> point for the plot&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">npoints_plot</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">linreg</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Doing a fast regresion in color plot&quot;</span><span class="p">)</span>
+        <span class="n">xplot</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">x</span><span class="p">),</span><span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="c1">#mask=~x.mask&amp;~y.mask</span>
+        <span class="c1">#x_unmask,y_unmask=x[mask].data,y[mask].data</span>
+        <span class="n">are_maskx</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">==</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span>
+        <span class="n">are_masky</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">==</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span>
+        <span class="n">are_masked</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">is_masked</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">|</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">is_masked</span><span class="p">(</span><span class="n">y</span><span class="p">))</span><span class="o">|</span><span class="p">(</span><span class="n">are_maskx</span><span class="o">|</span><span class="n">are_masky</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">are_masked</span><span class="p">:</span>
+            <span class="n">mask</span><span class="o">=~</span><span class="n">x</span><span class="o">.</span><span class="n">mask</span><span class="o">&amp;~</span><span class="n">y</span><span class="o">.</span><span class="n">mask</span>
+            <span class="n">x_unmask</span><span class="p">,</span><span class="n">y_unmask</span><span class="o">=</span><span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">,</span><span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;inputs are not masked arrays&quot;</span><span class="p">)</span>
+            <span class="n">x_unmask</span><span class="p">,</span><span class="n">y_unmask</span><span class="o">=</span><span class="n">x</span><span class="p">,</span><span class="n">y</span>
+        
+        <span class="n">ret</span><span class="o">=</span><span class="n">calc</span><span class="o">.</span><span class="n">linreg</span><span class="p">(</span><span class="n">x_unmask</span><span class="p">,</span><span class="n">y_unmask</span><span class="p">)</span>
+        <span class="n">m</span><span class="p">,</span><span class="n">merr</span><span class="p">,</span><span class="n">c</span><span class="p">,</span> <span class="n">cerr</span><span class="o">=</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">ret</span><span class="p">[</span><span class="s2">&quot;merr&quot;</span><span class="p">],</span><span class="n">ret</span><span class="p">[</span><span class="s2">&quot;c&quot;</span><span class="p">],</span><span class="n">ret</span><span class="p">[</span><span class="s2">&quot;cerr&quot;</span><span class="p">]</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xplot</span><span class="p">,</span><span class="n">m</span><span class="o">*</span><span class="n">xplot</span><span class="o">+</span><span class="n">c</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$\mu$: </span><span class="si">%.4f</span><span class="s1"> $\pm$ </span><span class="si">%.4f</span><span class="s1"> </span><span class="se">\n</span><span class="s1">  c: </span><span class="si">%.4f</span><span class="s1"> $\pm$ </span><span class="si">%.4f</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">merr</span><span class="p">,</span><span class="n">c</span><span class="p">,</span> <span class="n">cerr</span> <span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="n">prop</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">ftsize</span><span class="o">-</span><span class="mi">6</span><span class="p">})</span>
+
+    <span class="k">if</span> <span class="n">colorlog</span><span class="p">:</span> 
+        <span class="n">z</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">colornorm</span><span class="o">=</span><span class="n">LogNorm</span><span class="p">(</span> <span class="n">vmin</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">z</span><span class="p">),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">z</span><span class="p">))</span>
+        <span class="c1">#colornorm=LogNorm( vmin=1.e-3, vmax=1.e-0)</span>
+    <span class="k">else</span><span class="p">:</span> <span class="n">colornorm</span><span class="o">=</span><span class="kc">None</span>
+    <span class="k">if</span> <span class="n">z</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">yerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ebarskwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;fmt&quot;</span><span class="p">:</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;ls&quot;</span><span class="p">:</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="s1">&#39;elinewidth&#39;</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;alpha&#39;</span><span class="p">:</span><span class="n">alpha_err</span><span class="p">}</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">inds</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">inds</span><span class="p">],</span> <span class="n">yerr</span><span class="o">=</span><span class="n">yerr</span><span class="p">,</span> <span class="o">**</span><span class="n">ebarskwargs</span><span class="p">)</span>
+        <span class="n">sct</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">inds</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">inds</span><span class="p">],</span><span class="n">c</span><span class="o">=</span><span class="n">z</span><span class="p">[</span><span class="n">inds</span><span class="p">],</span> <span class="n">norm</span><span class="o">=</span><span class="n">colornorm</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">yerr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ebarskwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;fmt&quot;</span><span class="p">:</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="s2">&quot;ls&quot;</span><span class="p">:</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="s1">&#39;elinewidth&#39;</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;alpha&#39;</span><span class="p">:</span><span class="n">alpha_err</span><span class="p">}</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">inds</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">inds</span><span class="p">],</span> <span class="n">yerr</span><span class="o">=</span><span class="n">yerr</span><span class="p">,</span> <span class="o">**</span><span class="n">ebarskwargs</span><span class="p">)</span>
+        <span class="n">sct</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">inds</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">inds</span><span class="p">],</span> <span class="n">norm</span><span class="o">=</span><span class="n">colornorm</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span><span class="n">s</span><span class="o">=</span><span class="n">s</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">xtitle</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">ftsize</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">ytitle</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">ftsize</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">ftsize</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;major&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ylim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">ylim</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">xlim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">xlim</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">xscalelog</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">yscalelog</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">inds</span><span class="p">])</span><span class="o">!=</span><span class="mi">0</span><span class="p">):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">z</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cbar</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sct</span><span class="p">)</span>
+        <span class="c1">#cbar.ax.set_xlabel(ctitle, fontsize=ftsize-2)</span>
+        <span class="c1">#cbar.ax.xaxis.set_label_coords(0.5,1.1)</span>
+        <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ctitle</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">ftsize</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=-</span><span class="mi">90</span><span class="p">)</span>
+        <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_label_coords</span><span class="p">(</span><span class="mf">5.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sidehists</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+        <span class="n">histxkwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;histtype&quot;</span><span class="p">:</span><span class="s2">&quot;stepfilled&quot;</span><span class="p">,</span> <span class="s2">&quot;bins&quot;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;ec&quot;</span><span class="p">:</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span><span class="s2">&quot;gray&quot;</span><span class="p">,</span> <span class="s2">&quot;range&quot;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">}</span>
+        <span class="n">histxkwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sidehistxkwargs</span><span class="p">)</span>
+        <span class="n">histykwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;histtype&quot;</span><span class="p">:</span><span class="s2">&quot;stepfilled&quot;</span><span class="p">,</span> <span class="s2">&quot;bins&quot;</span><span class="p">:</span><span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;ec&quot;</span><span class="p">:</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span><span class="s2">&quot;gray&quot;</span><span class="p">,</span> <span class="s2">&quot;range&quot;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">}</span>
+        <span class="n">histykwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sidehistykwargs</span><span class="p">)</span>
+
+        <span class="n">divider</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+        <span class="n">axhistx</span> <span class="o">=</span> <span class="n">divider</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+        <span class="n">axhisty</span> <span class="o">=</span> <span class="n">divider</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+
+        <span class="n">axhistx</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">histxkwargs</span><span class="p">)</span>
+        <span class="n">axhisty</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;horizontal&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">histykwargs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tl</span> <span class="ow">in</span> <span class="n">axhistx</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">():</span>
+            <span class="n">tl</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tl</span> <span class="ow">in</span> <span class="n">axhisty</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">():</span>
+            <span class="n">tl</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        
+        <span class="n">axhistx</span><span class="o">.</span><span class="n">ticklabel_format</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s1">&#39;sci&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">scilimits</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">useMathText</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
+        <span class="c1">#axhistx.yaxis.tick_right()</span>
+
+        <span class="n">axhisty</span><span class="o">.</span><span class="n">ticklabel_format</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s1">&#39;sci&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">scilimits</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">useMathText</span><span class="o">=</span><span class="kc">True</span> <span class="p">)</span>
+        <span class="n">axhisty</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">tick_top</span><span class="p">()</span>
+        <span class="n">axhisty</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">labelrotation</span><span class="o">=-</span><span class="mi">90</span><span class="p">)</span>
+        <span class="n">ax_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">axhisty</span><span class="o">.</span><span class="n">get_xticks</span><span class="p">())</span>
+        <span class="n">axhisty</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">get_offset_text</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">exponent_axis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">ax_max</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">axhisty</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\times$10$^{</span><span class="si">%i</span><span class="s1">}$&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">exponent_axis</span><span class="p">),</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mf">1.01</span><span class="p">,</span> <span class="mf">.89</span><span class="p">),</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=-</span><span class="mi">90</span><span class="p">)</span>
+
+        <span class="c1">#axhisty.get_xaxis().get_offset_text().set_rotation(-90)</span>
+        <span class="c1">#axhisty.get_xaxis().get_offset_text().set_position((1.2,0))</span>
+
+        <span class="k">if</span> <span class="n">title</span><span class="p">:</span>
+            <span class="n">axhistx</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+            
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="color_plot_ax"><a class="viewcode-back" href="../../MLTF.html#MLTF.plot.color_plot_ax">[docs]</a><span class="k">def</span> <span class="nf">color_plot_ax</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">c</span><span class="p">,</span><span class="n">colorlog</span><span class="p">,</span><span class="n">xtitle</span><span class="p">,</span><span class="n">ytitle</span><span class="p">,</span><span class="n">ctitle</span><span class="p">,</span><span class="n">ftsize</span><span class="p">,</span><span class="n">xlim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1">#plt.clf()</span>
+    <span class="k">if</span> <span class="n">colorlog</span><span class="p">:</span> 
+        <span class="n">c</span><span class="o">=</span><span class="nb">abs</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+        <span class="n">colornorm</span><span class="o">=</span><span class="n">LogNorm</span><span class="p">(</span> <span class="n">vmin</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">c</span><span class="p">),</span> <span class="n">vmax</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span> <span class="n">colornorm</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">sct</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span><span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">colornorm</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">xtitle</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">ftsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ytitle</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">ftsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;major&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ylim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ylim</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">xlim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xlim</span><span class="p">)</span>
+    <span class="n">cbar</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">sct</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+    <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">ctitle</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">ftsize</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">cbar</span><span class="o">.</span><span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_label_coords</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">1.1</span><span class="p">)</span>
+    <span class="c1">#plt.tight_layout()</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span></div>
+    
+
+<div class="viewcode-block" id="plot_correlation_matrix"><a class="viewcode-back" href="../../MLTF.html#MLTF.plot.plot_correlation_matrix">[docs]</a><span class="k">def</span> <span class="nf">plot_correlation_matrix</span><span class="p">(</span><span class="n">mx</span><span class="p">,</span> <span class="n">my</span><span class="p">,</span> <span class="n">nbins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1">#mx is g1, my is w1</span>
+    <span class="c1">#makind 2d catalog</span>
+    <span class="n">sel</span><span class="o">=~</span><span class="n">mx</span><span class="o">.</span><span class="n">mask</span><span class="o">&amp;~</span><span class="n">my</span><span class="o">.</span><span class="n">mask</span>
+    <span class="n">mx</span><span class="o">=</span><span class="n">mx</span><span class="p">[</span><span class="n">sel</span><span class="p">]</span>
+    <span class="n">my</span><span class="o">=</span><span class="n">my</span><span class="p">[</span><span class="n">sel</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">mx</span><span class="p">)</span>
+    
+    <span class="n">joincat</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">mx</span><span class="o">.</span><span class="n">data</span><span class="p">,</span><span class="n">my</span><span class="o">.</span><span class="n">data</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">mx</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span><span class="n">my</span><span class="o">.</span><span class="n">mask</span><span class="p">))</span><span class="o">.</span><span class="n">T</span> <span class="p">)</span>
+    <span class="c1">#sorting ascending in mx</span>
+    <span class="n">sorted_join</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">joincat</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1">#to use np.cov with need equal size samples</span>
+    <span class="n">binsize</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sorted_join</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">/</span><span class="n">nbins</span><span class="p">)</span>
+    <span class="n">indx</span><span class="o">=</span><span class="p">[</span><span class="n">binsize</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbins</span><span class="p">)]</span> 
+    <span class="n">splited_join</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">sorted_join</span><span class="p">,</span> <span class="n">nbins</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:</span><span class="n">nbins</span><span class="p">]</span>
+    <span class="n">mxlist</span><span class="o">=</span><span class="p">[</span> <span class="n">ma</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">ma</span> <span class="ow">in</span> <span class="n">splited_join</span><span class="p">]</span>
+    <span class="n">mylist</span><span class="o">=</span><span class="p">[</span> <span class="n">ma</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">ma</span> <span class="ow">in</span> <span class="n">splited_join</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">mxlist</span><span class="p">)</span>
+    <span class="n">covmat</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">mxlist</span><span class="o">+</span><span class="n">mylist</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+    <span class="c1">#lengths = [binsize*nbins]*2</span>
+    <span class="n">lengths</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">nbins</span><span class="o">*</span><span class="mi">2</span>
+
+    <span class="c1">#plt.imshow(covmat,cmap=&#39;viridis&#39;+&#39;_r&#39;, interpolation=&#39;nearest&#39;, aspect=&#39;auto&#39;)</span>
+    <span class="c1">#plt.colorbar()</span>
+    <span class="n">plotcorrmat</span><span class="p">(</span><span class="n">covmat</span><span class="p">)</span>
+    
+    
+
+    <span class="n">pos_lines</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lengths</span><span class="p">)):</span>
+        <span class="n">pos_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos_lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">lengths</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">pos_lines</span> <span class="o">=</span> <span class="n">pos_lines</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">pos_lines</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="plotcorrmat"><a class="viewcode-back" href="../../MLTF.html#MLTF.plot.plotcorrmat">[docs]</a><span class="k">def</span> <span class="nf">plotcorrmat</span><span class="p">(</span><span class="n">cov</span><span class="p">):</span>
+    <span class="c1">#cov = np.mat(cov)</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">cov</span><span class="p">)))</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+    <span class="n">corr</span> <span class="o">=</span> <span class="n">d</span><span class="o">*</span><span class="n">cov</span><span class="o">*</span><span class="n">d</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">corr</span><span class="p">)</span>
+    <span class="n">cov_vmin</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">corr</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="o">+</span><span class="s1">&#39;_r&#39;</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span>
+               <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">cov_vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1.</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Andres Navarro.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
