@@ -17,5 +17,5 @@ jobs:
       - name: Deploy
         uses: actions/upload-artifact@v1
         with:
-          name: DocumentaionHTML
-          path: docs/
+          name: DocumentationHTML
+          path: docs/_build/html/
