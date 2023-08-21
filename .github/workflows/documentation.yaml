@@ -45,7 +45,6 @@ jobs:
           #cd docs && ls && make html && cd ..
           cd docs
           make html
-          #cd ..
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
