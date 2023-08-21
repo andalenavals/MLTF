@@ -33,6 +33,11 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup Pages
         uses: actions/configure-pages@v3
+      - name: Pyenv
+	uses: actions/setup-python@v3
+      - name: Install dependencies
+         run: |
+           pip install sphinx sphinx_rtd_theme myst-parser MLTF scipy
       - name: Sphinx build
         run: |
           cd docs && make html && cd ..
