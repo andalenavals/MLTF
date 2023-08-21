@@ -22,4 +22,3 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         path: docs/_build/
-	if-no-files-found: error
