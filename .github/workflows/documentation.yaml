@@ -19,7 +19,7 @@ jobs:
 #      with:
 #        docs-folder: "docs/"
     - name: Deploy
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v3
       with:
         name: DocumentationHTML
         path: docs/_build/html/
