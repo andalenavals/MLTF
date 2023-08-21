@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  docs:
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -34,15 +34,14 @@ jobs:
     - name: Sphinx build
       run: |
         cd docs && make html && cd ..
-    #- name: Deploy
-    #  uses: actions/upload-artifact@v2
-    #  with:
-#	path: "."
-    - name: Upload
-      uses: actions/upload-artifact@v3
+    - name: Deploy
+      uses: actions/upload-artifact@v2
       with:
-        #path: docs/_build/html
 	path: "."
+#    - name: Upload
+#      uses: actions/upload-artifact@v3
+#      with:
+#        path: docs/_build/html
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v2
