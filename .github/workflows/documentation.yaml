@@ -17,6 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+
   deploy:
     environment:
       name: github-pages
