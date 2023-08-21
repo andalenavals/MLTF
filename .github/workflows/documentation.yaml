@@ -43,10 +43,10 @@ jobs:
       - name: Sphinx build
         run: |
           #cd docs && ls && make html && cd ..
-	  cd docs
-	  ls
-	  make html
-	  cd ..
+          cd docs
+          ls
+          make html
+          cd ..
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
