@@ -39,6 +39,10 @@ jobs:
       with:
         #path: docs/_build/html
 	path: "."
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        path: docs/_build/html
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v2
