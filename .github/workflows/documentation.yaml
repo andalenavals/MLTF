@@ -14,7 +14,7 @@ jobs:
         pip install sphinx sphinx_rtd_theme myst-parser MLTF scipy
     - name: Sphinx build
       run: |
-        cd docs && make html && cd ..
+        cd docs && make html && cd .. && ls docs
 #    - uses: ammaraskar/sphinx-action@master
 #      with:
 #        docs-folder: "docs/"
