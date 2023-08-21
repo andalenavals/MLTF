@@ -8,12 +8,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
-      - name: Install dependencies
-        run: |
-          pip install sphinx sphinx_rtd_theme myst-parser MLTF scipy
-      - name: Sphinx build
-        run: |
-          cd docs && make html && cd ..
+      #- name: Install dependencies
+      #  run: |
+      #    pip install sphinx sphinx_rtd_theme myst-parser MLTF scipy
+      #- name: Sphinx build
+      #  run: |
+      #    cd docs && make html && cd ..
       - name: Build
       	uses: ammaraskar/sphinx-action@master
 	with:
