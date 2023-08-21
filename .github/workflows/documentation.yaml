@@ -34,10 +34,10 @@ jobs:
     - name: Sphinx build
       run: |
         cd docs && make html && cd ..
-    - name: Deploy
-      uses: actions/upload-artifact@v2
-      with:
-	path: .
+    #- name: Deploy
+    #  uses: actions/upload-artifact@v2
+    #  with:
+#	path: "."
     - name: Upload
       uses: actions/upload-artifact@v3
       with:
