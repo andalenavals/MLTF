@@ -42,6 +42,7 @@ jobs:
           pip install sphinx sphinx_rtd_theme myst-parser MLTF scipy
       - name: Sphinx build
         run: |
+	  ls
           make html
           #cd docs && make html && cd ..
       - name: Upload artifact
