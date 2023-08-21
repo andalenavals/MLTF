@@ -42,7 +42,8 @@ jobs:
           pip install sphinx sphinx_rtd_theme myst-parser MLTF scipy
       - name: Sphinx build
         run: |
-          cd docs && make html && cd ..
+          make html
+          #cd docs && make html && cd ..
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
