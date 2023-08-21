@@ -14,10 +14,9 @@ jobs:
       #- name: Sphinx build
       #  run: |
       #    cd docs && make html && cd ..
-      - name: Build
-      	uses: ammaraskar/sphinx-action@master
-	with:
-	  docs-folder: "docs/"
+      uses: ammaraskar/sphinx-action@master
+      with:
+        docs-folder: "docs/"
       - name: Deploy
         uses: actions/upload-artifact@v1
         with:
