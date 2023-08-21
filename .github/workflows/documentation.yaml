@@ -37,7 +37,8 @@ jobs:
     - name: Deploy
       uses: actions/upload-artifact@v2
       with:
-        path: docs/_build/html
+        #path: docs/_build/html
+	path: "."
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v2
