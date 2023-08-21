@@ -27,10 +27,10 @@ jobs:
     - name: Sphinx build
       run: |
         cd docs && make html && cd ..
-#    - uses: ammaraskar/sphinx-action@master
-#      with:
-#        docs-folder: "docs/"
     - name: Deploy
       uses: actions/upload-artifact@v3
       with:
         path: docs/_build/html
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v2
