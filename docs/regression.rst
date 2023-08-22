@@ -7,4 +7,10 @@ We created 3D mock data with the structure (ncases, nreas, nfeats). Where ncases
 Point estimate inverse regression
 #################################
 
-As an
+After running you will
+
+
+Point estimate inverse regression with Dropout
+##############################################
+
+One way to account for NN model uncertainties is to use Dropout layers which randomly deactivate some neurons during the training and evalution time.
