@@ -13,13 +13,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-"""
-File: MLTF/python/layer.py
-
-Created on: 13/09/22
-Author: Andres Navarro
-"""
-
 import logging
 
 import tensorflow as tf

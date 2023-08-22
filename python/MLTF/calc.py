@@ -14,12 +14,7 @@
 #
 
 """
-File: MLTF/python/calc.py
-
-Created on: 13/09/22
-Author: Andres Navarro
-
-A module to hold some maths or statistics oriented functions woring on numpy arrays.
+A module to hold some maths or statistics oriented functions working on numpy arrays.
 """
 
 import numpy as np

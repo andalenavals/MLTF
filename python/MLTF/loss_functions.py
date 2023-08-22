@@ -19,14 +19,18 @@ import tensorflow as tf
 logger = logging.getLogger(__name__)
 PRECISION=tf.float32 
 
-def mse(targets, preds, mask=None):
-    '''
-    targets: 3D array or tensor containing the true values desired to predict
-    preds: 3D array or tensor with the predictions from the NN
-    mask: 3D array or tensor, mask for the predictions before calculating loss. 1 means keep, 0 means ignore (opposite definition than maskedarrays mask).
+def mse(targets, preds, mask=None, weights=None):
+    r"""
+    :Parameters:
+        :targets: 3D array containing the true values to be predicted, :math:`p^{\mathrm{true}}`.
+        :preds: 3D array with predictions from the neural network, :math:`\hat{p}`.
+        :mask: 3D array acting as a mask for predictions before loss calculation. A value of 1 indicates to keep the prediction, while 0 indicates to ignore it. (Note: The mask's definition is opposite to that of masked arrays.)
+        :weights: 3D array giving more or less importance to some cases and realizations, :math:`w`.
 
-    :math:`\left(f(x)+n, n\right)`
-    '''
+    :Returns:
+        :math:`\frac{1}{\sum_{k=1}^{n_{\mathrm{case}}}\sum_{j=1}^{n_{\mathrm{rea}}} w_{j,k}}\sum_{k=1}^{n_{\mathrm{case}}}\sum_{j=1}^{n_{\mathrm{rea}}}w_{j,k}  \left( \hat{p}_{jk} - p^{\mathrm{true}}_k  \right)^2`
+    """
+
     #assert preds[0].get_shape() ==mask[0].get_shape()     
     #assert tf.shape(preds[0])==tf.shape(mask[0])
     if tf.keras.backend.ndim(preds) == 3:
@@ -36,10 +40,29 @@ def mse(targets, preds, mask=None):
             squarebias=mask_factor*tf.keras.backend.square(mask*(preds-targets))
         else:
             squarebias=tf.keras.backend.square(preds-targets)
-        mse_val=tf.keras.backend.mean(squarebias)
+
+        if weights is not None:
+            logger.debug("Using case weights")
+            num = tf.keras.backend.mean(weights*squarebias)
+            den = tf.keras.backend.mean(weights )
+            mse_val=num/den
+        else:
+            logger.debug("Not using case weights")
+            mse_val=tf.keras.backend.mean(squarebias)
+
     return mse_val
 
 def msb(targets, preds, mask=None, caseweights=None):
+    r"""
+    :Parameters:
+        :targets: 3D array containing the true values to be predicted, :math:`p^{\mathrm{true}}`.
+        :preds: 3D array with predictions from the neural network, :math:`\hat{p}`.
+        :mask: 3D array acting as a mask for predictions before loss calculation. A value of 1 indicates to keep the prediction, while 0 indicates to ignore it. (Note: The mask's definition is opposite to that of masked arrays.)
+        :caseweights: 3D array giving more or less importance to some cases, :math:`w`. 
+
+    :Returns:
+        :math:`\frac{1}{\sum_{k=1}^{n_{\mathrm{case}}} w_{k}}\sum_{k=1}^{n_{\mathrm{case}}} w_{k} \left[ \frac{1}{n_{\mathrm{rea}}}\sum_{j=1}^{n_{\mathrm{rea}}}  \hat{p}_{jk} - p^{\mathrm{true}}_k  \right]^2`
+    """
     #assert preds[0].get_shape() ==mask[0].get_shape()
     if tf.keras.backend.ndim(preds) == 3:
         if mask is not None:        
@@ -62,96 +85,147 @@ def msb(targets, preds, mask=None, caseweights=None):
             msb_val=tf.keras.backend.mean(tf.keras.backend.square(biases))
     return msb_val
 
-def mswb(targets, preds, point_preds, mask=None):
-    if tf.keras.backend.ndim(preds) == 3:
+def mswb(targets, wpreds, point_preds, mask=None):
+    r"""
+    :Parameters:
+        :targets: 3D array containing the true values to be predicted, :math:`p^{\mathrm{true}}`.
+        :wpreds: 3D array of weight predictions :math:`\hat{w}`.
+        :point_preds: 3d array with estimates to calibrate with weights, :math:`p`.
+        :mask: 3D array acting as a mask for predictions before loss calculation. A value of 1 indicates to keep the prediction, while 0 indicates to ignore it. (Note: The mask's definition is opposite to that of masked arrays.)
+
+    :Returns:
+        :math:`\frac{1}{n_{\mathrm{case}}} \sum_{k=1}^{n_{\mathrm{case}}}\left[ \frac{ \sum_{j=1}^{n_{\mathrm{rea}}}  p_{jk} \cdot \hat{w}_{jk}(p) }{\sum_{j=1}^{n_{\mathrm{rea}}} \hat{w}_{jk}(p)} - p^{\mathrm{true}}_k \right]^2`
+    """
+
+    if tf.keras.backend.ndim(wpreds) == 3:
         if mask is not None:
-            masked_preds=preds*mask
+            masked_wpreds=wpreds*mask
             #mask factor cancel out for this case
-            num = tf.keras.backend.mean(masked_preds*point_preds, axis=1, keepdims=True) 
-            den = tf.keras.backend.mean(masked_preds , axis=1, keepdims=True) 
+            num = tf.keras.backend.mean(masked_wpreds*point_preds, axis=1, keepdims=True) 
+            den = tf.keras.backend.mean(masked_wpreds , axis=1, keepdims=True) 
         else:
-            num = tf.keras.backend.mean(preds*point_preds, axis=1, keepdims=True) 
-            den = tf.keras.backend.mean(preds , axis=1, keepdims=True) 
+            num = tf.keras.backend.mean(wpreds*point_preds, axis=1, keepdims=True) 
+            den = tf.keras.backend.mean(wpreds , axis=1, keepdims=True) 
         biases = num/den - targets
         mswb_val=tf.keras.backend.mean(tf.keras.backend.square(biases))
     return mswb_val
 
-def mswb_lagrange1(targets, preds, point_preds, mask=None, lamb=1.0):
-    ## constraining mean weights of all galaxies to avoid scale degeneracies.
-    if tf.keras.backend.ndim(preds) == 3:
+def mswb_lagrange1(targets, wpreds, point_preds, mask=None, lamb=1.0):
+    r"""
+    :Parameters:
+        :targets: 3D array containing the true values to be predicted, :math:`p^{\mathrm{true}}`.
+        :wpreds: 3D array of weight predictions :math:`\hat{w}`.
+        :point_preds: 3d array with estimates to calibrate with weights, :math:`p`.
+        :mask: 3D array acting as a mask for predictions before loss calculation. A value of 1 indicates to keep the prediction, while 0 indicates to ignore it. (Note: The mask's definition is opposite to that of masked arrays.)
+        :lamb: float, lagrange multiplier.
+
+    :Returns:
+        :math:`\frac{1}{n_{\mathrm{case}}} \sum_{k=1}^{n_{\mathrm{case}}} \left[\frac{ \sum_{j=1}^{n_{\mathrm{rea}}}  p_{jk} \cdot \hat{w}_{jk}(p) }{\sum_{j=1}^{n_{\mathrm{rea}}} \hat{w}_{jk}(p)} - p^{\mathrm{true}}_k \right]^2 + \lambda \cdot \left( \frac{\sum_{k=1}^{n_{\mathrm{case}}}\sum_{j=1}^{n_{\mathrm{rea}}} \hat{w}_{jk}(p)}{n_{\mathrm{case}} \cdot n_{\mathrm{rea}}} - 0.5 \right)^2`
+    """
+
+    if tf.keras.backend.ndim(wpreds) == 3:
         if mask is not None:
-            masked_preds=preds*mask
+            masked_wpreds=wpreds*mask
             #mask factor cancel out for this case
-            num = tf.keras.backend.mean(masked_preds*point_preds, axis=1, keepdims=True) 
-            den = tf.keras.backend.mean(masked_preds , axis=1, keepdims=True) 
+            num = tf.keras.backend.mean(masked_wpreds*point_preds, axis=1, keepdims=True) 
+            den = tf.keras.backend.mean(masked_wpreds , axis=1, keepdims=True) 
         else:
-            num = tf.keras.backend.mean(preds*point_preds, axis=1, keepdims=True) 
-            den = tf.keras.backend.mean(preds , axis=1, keepdims=True) 
+            num = tf.keras.backend.mean(wpreds*point_preds, axis=1, keepdims=True) 
+            den = tf.keras.backend.mean(wpreds , axis=1, keepdims=True) 
         biases = num/den - targets
         mswb_val=tf.keras.backend.mean(tf.keras.backend.square(biases))
 
         if mask is not None:
-            nrea= tf.cast(tf.shape(preds)[1],PRECISION)
+            nrea= tf.cast(tf.shape(wpreds)[1],PRECISION)
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
-            mean_preds_rea=mask_factor*tf.keras.backend.mean(masked_preds, axis=1, keepdims=True)
+            mean_preds_rea=mask_factor*tf.keras.backend.mean(masked_wpreds, axis=1, keepdims=True)
             mean_preds= tf.keras.backend.mean(mean_preds_rea)
         else:
-            mean_preds = tf.keras.backend.mean(preds)
+            mean_preds = tf.keras.backend.mean(wpreds)
         lagrange_term=lamb*tf.keras.backend.square(mean_preds -0.5)
     return mswb_val+lagrange_term
 
-def mswb_lagrange2(targets, preds, point_preds, mask=None, lamb=1.0):
-    ## constraining mean weights of all galaxies to avoid scale degeneracies.
-    mweight=1.5
-    if tf.keras.backend.ndim(preds) == 3:
-        if mask is not None:
-            masked_preds=preds*mask
-            #mask factor cancel out for this case
-            num = tf.keras.backend.mean(masked_preds*point_preds, axis=1, keepdims=True) 
-            den = tf.keras.backend.mean(masked_preds , axis=1, keepdims=True)
+def mswb_lagrange2(targets, wpreds, point_preds, mask=None, lamb=1.0):
+    r"""
+    :Parameters:
+        :targets: 3D array containing the true values to be predicted, :math:`p^{\mathrm{true}}`.
+        :wpreds: 3D array of weight predictions :math:`\hat{w}`.
+        :point_preds: 3d array with estimates to calibrate with weights, :math:`p`.
+        :mask: 3D array acting as a mask for predictions before loss calculation. A value of 1 indicates to keep the prediction, while 0 indicates to ignore it. (Note: The mask's definition is opposite to that of masked arrays.)
+        :lamb: float, lagrange multiplier.
 
-            nrea= tf.cast(tf.shape(preds)[1],PRECISION)
+    :Returns:
+        :math:`\frac{1}{n_{\mathrm{case}}} \sum_{k=1}^{n_{\mathrm{case}}} \left[\left(\frac{ \sum_{j=1}^{n_{\mathrm{rea}}}  p_{jk} \cdot \hat{w}_{jk}(p) }{\sum_{j=1}^{n_{\mathrm{rea}}} \hat{w}_{jk}(p)} - p^{\mathrm{true}}_k \right)^2 + \lambda \cdot \left( \frac{\sum_{j=1}^{n_{\mathrm{rea}}} w_{jk}(p)}{n_{\mathrm{rea}}} - 0.5\right)^2\right]`
+    """
+
+    mweight=0.5
+    if tf.keras.backend.ndim(wpreds) == 3:
+        if mask is not None:
+            masked_wpreds=wpreds*mask
+            #mask factor cancel out for this case
+            num = tf.keras.backend.mean(masked_wpreds*point_preds, axis=1, keepdims=True) 
+            den = tf.keras.backend.mean(masked_wpreds , axis=1, keepdims=True)
+
+            nrea= tf.cast(tf.shape(wpreds)[1],PRECISION)
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
             lagrange_term= lamb*tf.keras.backend.square(mask_factor*den-mweight)
         else:
-            num = tf.keras.backend.mean(preds*point_preds, axis=1, keepdims=True) 
-            den = tf.keras.backend.mean(preds , axis=1, keepdims=True)
+            num = tf.keras.backend.mean(wpreds*point_preds, axis=1, keepdims=True) 
+            den = tf.keras.backend.mean(wpreds , axis=1, keepdims=True)
             lagrange_term= lamb*tf.keras.backend.square(den-mweight)
         biases = num/den - targets
         mswb_val=tf.keras.backend.mean(tf.keras.backend.square(biases)+tf.keras.backend.square(lagrange_term))
 
     return mswb_val
 
-def msmb(targets, preds, point_preds, mask=None):
-    if tf.keras.backend.ndim(preds) == 3:
+def msmb(targets, mpreds, point_preds, mask=None):
+    r"""
+    :Parameters:
+        :targets: 3D array containing the true values to be predicted, :math:`p^{\mathrm{true}}`.
+        :mpreds: 3D array of corraction factor predictions :math:`\hat{m}`.
+        :point_preds: 3d array with estimates to calibrate with weights, :math:`p`.
+        :mask: 3D array acting as a mask for predictions before loss calculation. A value of 1 indicates to keep the prediction, while 0 indicates to ignore it. (Note: The mask's definition is opposite to that of masked arrays.)
+
+    :Returns:
+        :math:`\frac{1}{n_{\mathrm{case}}} \sum_{k=1}^{n_{\mathrm{case}}}\left[ \frac{1}{n_{\mathrm{rea}}} \sum_{j=1}^{n_{\mathrm{rea}}}  p_{jk} \cdot \left(1+\hat{m}_{jk}(p)\right) - p^{\mathrm{true}}_k \right]^2`
+    """
+    if tf.keras.backend.ndim(mpreds) == 3:
         if mask is not None:
             #nrea= tf.constant(preds.get_shape().as_list()[1],PRECISION)
-            nrea= tf.cast(tf.shape(preds)[1],PRECISION)
+            nrea= tf.cast(tf.shape(mpreds)[1],PRECISION)
             mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
-            masked_preds=(1+preds)*mask
+            masked_mpreds=(1+mpreds)*mask
             #masked_preds=(0.5+preds)*mask
-            pred_masked_mean= mask_factor*tf.keras.backend.mean(masked_preds,axis=1,keepdims=True)
-            num = mask_factor*tf.keras.backend.mean(masked_preds*point_preds,axis=1,keepdims=True)
+            num = mask_factor*tf.keras.backend.mean(masked_mpreds*point_preds,axis=1,keepdims=True)
         else:
-            num = tf.keras.backend.mean(( 1+preds)*point_preds, axis=1, keepdims=True)
+            num = tf.keras.backend.mean(( 1+mpreds)*point_preds, axis=1, keepdims=True)
 
         biases = num - targets
         msmb_val=tf.keras.backend.mean(tf.keras.backend.square(biases))
     return msmb_val
 
-def mswcb(targets,  w_preds, m_preds, point_preds, mask=None):
-    import tensorflow as tf
+def mswcb(targets,  wpreds, mpreds, point_preds, mask=None):
+    r"""
+    :Parameters:
+        :targets: 3D array containing the true values to be predicted, :math:`p^{\mathrm{true}}`.
+        :wpreds: 3D array of corraction factor predictions :math:`\hat{w}`.
+        :mpreds: 3D array of corraction factor predictions :math:`\hat{m}`.
+        :point_preds: 3d array with estimates to calibrate with weights, :math:`p`.
+        :mask: 3D array acting as a mask for predictions before loss calculation. A value of 1 indicates to keep the prediction, while 0 indicates to ignore it. (Note: The mask's definition is opposite to that of masked arrays.)
 
-    if tf.keras.backend.ndim(w_preds) == 3:
+    :Returns:
+        :math:`\frac{1}{n_{\mathrm{case}}} \sum_{k=1}^{n_{\mathrm{case}}} \left[ \frac{ \sum_{j=1}^{n_{\mathrm{rea}}}  p_{jk} \cdot (\hat{m}_{jk}(p) + 1) \cdot \hat{w}_{jk}(p) }{\sum_{j=1}^{n_{\mathrm{rea}}} \hat{w}_{jk}(p)} - p^{\mathrm{true}}_k \right]^2`
+    """
+    if tf.keras.backend.ndim(wpreds) == 3:
         if mask is not None:
-            masked_w_preds=w_preds*mask
-            masked_1pm_preds=(1+m_preds)*mask
+            masked_w_preds=wpreds*mask
+            masked_1pm_preds=(1+mpreds)*mask
             #mask factor cancel out for this case
             num = tf.keras.backend.mean((masked_1pm_preds)*masked_w_preds*point_preds, axis=1, keepdims=True)
             den = tf.keras.backend.mean(masked_w_preds , axis=1, keepdims=True) 
         else:
-            num = tf.keras.backend.mean((1+m_preds)*w_preds*point_preds, axis=1, keepdims=True) 
-            den = tf.keras.backend.mean(w_preds , axis=1, keepdims=True)
+            num = tf.keras.backend.mean((1+mpreds)*wpreds*point_preds, axis=1, keepdims=True) 
+            den = tf.keras.backend.mean(wpreds , axis=1, keepdims=True)
         
         biases = num/den - targets
         mswb_val=tf.keras.backend.mean(tf.keras.backend.square(biases))
@@ -159,6 +233,15 @@ def mswcb(targets,  w_preds, m_preds, point_preds, mask=None):
 
 # NEGATIVE LOG LIKELIHOOD
 def nll(targets, pred_distribution , mask=None):
+    r"""
+    :Parameters:
+        :targets: 3D array containing the true values to be predicted, :math:`p^{\mathrm{true}}`.
+        :pred_distribution:  3D o 2D array of tfp.distributions.Distributions, :math:`P_{\theta}(X)`.
+        :mask: 3D array acting as a mask for predictions before loss calculation. A value of 1 indicates to keep the prediction, while 0 indicates to ignore it. (Note: The mask's definition is opposite to that of masked arrays.)
+
+    :Returns:
+        :math:`-\frac{1}{n_{\mathrm{case}}n_{\mathrm{rea}}} \sum_{k=1}^{n_{case}} \sum_{j=1}^{n_{\mathrm{rea}}} \log{\left[P_{\theta}(X=p^{\mathrm{true}}_{j,k})\right]}`
+    """
     if tf.keras.backend.ndim(pred_distribution) == 2:
         targets=tf.reshape(targets, tf.shape(targets)[:2])
         if mask is not None:

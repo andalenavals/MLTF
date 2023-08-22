@@ -12,22 +12,27 @@
 # along with this library; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
-
-"""
-File: MLTF/python/models.py
-
-Created on: 13/09/22
-Author: Andres Navarro
-"""
-
 import logging
 from . import layer
 import tensorflow as tf
 import numpy as np
 
 logger = logging.getLogger(__name__)
+'''
+Set of Sequential models for different loss functions. This module is particularly designed for regression problems. 
+'''
 
-def get_model(hidden_sizes=(5,5), activation='sigmoid', layer=layer.TfbilacLayer, dropout_prob=0.0, outnodes=1):
+def get_model(hidden_sizes=(5,5), activation='sigmoid', layer=layer.TfbilacLayer, dropout_prob=0.0, noutnodes=1):
+    '''
+    :Parameters:
+       :hidden_sizes: tuple,list or array with the number of nodes for each layers
+       :activation: activation function connecting inner layers
+       :layer: an instance of tf.keras.layers.Layer
+       :dropout_prob: float dropout probability
+       :noutnodes: int, number of output nodes
+    :Returns:
+       instance of tf.keras.Sequential
+    '''
     model = tf.keras.Sequential()
 
     for hidden_size in hidden_sizes:
@@ -37,14 +42,32 @@ def get_model(hidden_sizes=(5,5), activation='sigmoid', layer=layer.TfbilacLayer
         if dropout_prob>0.0:
             model.add(tf.keras.layers.Dropout(dropout_prob))
     # And the output layer, without activation:
-    if outnodes>0: model.add(layer(outnodes))
+    if noutnodes>0: model.add(layer(noutnodes))
 
     return model
 
     #print(model.summary(line_length=100))
 
 
-def create_model(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer, activation='sigmoid', out_activation=None, loss_name='msb', use_mask=False, use_caseweights=False, lamb=None, dropout_prob=0.0,training=None,dtype='float32'):
+def create_model(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer, activation='sigmoid', out_activation=None, loss_name='msb', use_mask=False, use_caseweights=False, lamb=None, dropout_prob=0.0,training=None, noutnodes=1, dtype='float32'):
+    '''
+    :Parameters:
+       :input_shape: tuple, shape of the input. Should correspond to the shape of you input data ignoring the first dimension. (nreas,nfeats)
+       :hidden_sizes: tuple,list or array with the number of nodes for each layers
+       :layer: an instance of tf.keras.layers.Layer
+       :activation: activation function connecting inner layers
+       :out_activation: activation function for the output layer
+       :loss_name: loss function
+       :use_mask: bool, if True use include the mask Input. Avaliable for all loss functions
+       :use_caseweights: bool, if True include the weights or caseweights in the Input. Avaliable for mse and msb loss functions.
+       :lamb: float, lagrange multiplier. For mswb_lagrange1 and mswb_lagrange2, loss functions.
+       :dropout_prob: float dropout probability
+       :training: if True, activate the training behavious of the model (for example evalution during validation of the dropouts).
+       :noutnodes: int, number of output nodes
+       :dtype: dtype of the Inputs
+    :Returns:
+       instance of tf.keras.Model
+    '''
     from . import loss_functions
     if dtype=='float32':
         loss_functions.PRECISION=tf.float32
@@ -59,10 +82,10 @@ def create_model(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer,
         nfeas=None
         input_shape=(nreas,nfeas)
     input_fea=tf.keras.Input(input_shape,dtype=dtype) #feat
-    input_tar=tf.keras.Input((1, 1),dtype=dtype) #targets
+    input_tar=tf.keras.Input((1, noutnodes),dtype=dtype) #targets
     inputs= [input_fea,input_tar]
     
-    model = get_model(hidden_sizes=hidden_sizes, activation=activation,  layer=layer,dropout_prob=dropout_prob )
+    model = get_model(hidden_sizes=hidden_sizes, activation=activation,  layer=layer,dropout_prob=dropout_prob, noutnodes=noutnodes )
 
     shift=False; shiftval=1.0
     
@@ -89,7 +112,7 @@ def create_model(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer,
     if loss_name == 'mse':
         logger.info("Using %s"%(loss_name))
         if use_mask:
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas, noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.mse( inputs[1], x, mask=inputs[2])
         else:
@@ -99,11 +122,11 @@ def create_model(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer,
         logger.info("Using %s"%(loss_name))
         if use_mask&(~use_caseweights):
             #input_mask = tf.keras.Input(input_shape,dtype=dtype)
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas, noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.msb( inputs[1], x, mask=inputs[2])
         elif use_mask&use_caseweights:
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype); inputs.append(input_mask)
+            input_mask = tf.keras.Input((nreas,noutnodes),dtype=dtype); inputs.append(input_mask)
             input_caseweights = tf.keras.Input((1,1),dtype=dtype); inputs.append(input_caseweights)
             loss_func =loss_functions.msb( inputs[1], x, mask=inputs[2], caseweights=inputs[3])
         else:
@@ -112,10 +135,10 @@ def create_model(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer,
     if loss_name == 'msmb':
         logger.info("Using %s"%(loss_name))
 
-        input_pointpreds=tf.keras.Input((nreas, 1),dtype=dtype)
+        input_pointpreds=tf.keras.Input((nreas, noutnodes),dtype=dtype)
         inputs.append(input_pointpreds)
         if use_mask:
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas, noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.msmb( inputs[1], x, inputs[2], mask=inputs[3])
         else:
@@ -124,37 +147,38 @@ def create_model(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer,
     if loss_name == 'mswb':
         logger.info("Using %s"%(loss_name))
 
-        input_pointpreds=tf.keras.Input((nreas, 1),dtype=dtype)
+        input_pointpreds=tf.keras.Input((nreas, noutnodes),dtype=dtype)
         inputs.append(input_pointpreds)
         if use_mask & ~use_caseweights:
             #input_mask = tf.keras.Input(input_shape,dtype=dtype)
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas,noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.mswb( inputs[1], x, inputs[2], mask=inputs[3])
         elif use_mask & use_caseweights:
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype); inputs.append(input_mask)
+            input_mask = tf.keras.Input((nreas,noutnodes),dtype=dtype); inputs.append(input_mask)
             input_caseweights = tf.keras.Input((1,1),dtype=dtype); inputs.append(input_caseweights)
             loss_func =loss_functions.msb( inputs[1], x, inputs[2], mask=inputs[3], caseweights=inputs[4])
         else:
             loss_func =loss_functions.mswb( inputs[1], x, inputs[2])
 
     if lamb is not None: logger.info("Using lambda %.3f"%(lamb))
+    else: lamb=1.0
     if loss_name == 'mswb_lagrange1':
         logger.info("Using %s"%(loss_name))
-        input_pointpreds=tf.keras.Input((nreas, 1),dtype=dtype)
+        input_pointpreds=tf.keras.Input((nreas, noutnodes),dtype=dtype)
         inputs.append(input_pointpreds)
         if use_mask:
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas,noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.mswb_lagrange1( inputs[1], x, inputs[2], mask=inputs[3], lamb=lamb)
         else:
             loss_func =loss_functions.mswb_lagrange1( inputs[1], x, inputs[2], lamb=lamb)
     if loss_name == 'mswb_lagrange2':
         logger.info("Using %s"%(loss_name))
-        input_pointpreds=tf.keras.Input((nreas, 1),dtype=dtype)
+        input_pointpreds=tf.keras.Input((nreas, noutnodes),dtype=dtype)
         inputs.append(input_pointpreds)
         if use_mask:
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas, noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.mswb_lagrange2( inputs[1], x, inputs[2], mask=inputs[3], lamb=lamb)
         else:
@@ -173,9 +197,31 @@ def create_model(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer,
 
 
 #two concatenated networks
-def create_mw_model(input_shape_w=None, hidden_sizes_w=(5,5), layer_w=layer.TfbilacLayer, activation_w='sigmoid', out_activation_w=None, input_shape_m=None, hidden_sizes_m=(5,5), layer_m=layer.TfbilacLayer, activation_m='sigmoid', out_activation_m='sigmoid', loss_name='mswcb', use_mask=True, lamb=None, dtype='float32' ):
-
-    import tensorflow as tf
+def create_mw_model(input_shape_w=None, hidden_sizes_w=(5,5), layer_w=layer.TfbilacLayer, activation_w='sigmoid', out_activation_w=None, input_shape_m=None, hidden_sizes_m=(5,5), layer_m=layer.TfbilacLayer, activation_m='sigmoid', out_activation_m='sigmoid', loss_name='mswcb', use_mask=True, lamb=None, training=None, dropout_prob=0.0, noutnodes=1, dtype='float32' ):
+    '''
+    A model compoused of two concatenated Sequential models, one predicting :math:`\hat{w}` and the other predicting :math:`\hat{m}` for a `mswcb`.
+    
+    :Parameters:
+       :input_shape_w: tuple, shape of the input for the network predicting :math:`\hat{w}`. Should correspond to the shape of you input data ignoring the first dimension. (nreas,nfeats)
+       :hidden_sizes_w: tuple,list or array with the number of nodes for each layers
+       :layer_w: an instance of tf.keras.layers.Layer
+       :activation_w: activation function connecting inner layers
+       :out_activation_w: activation function for the output layer
+       :input_shape_m: tuple, shape of the input for the network predicting :math:`\hat{m}`. Should correspond to the shape of you input data ignoring the first dimension. (nreas,nfeats)
+       :hidden_sizes_m: tuple,list or array with the number of nodes for each layers
+       :layer_m: an instance of tf.keras.layers.Layer
+       :activation_m: activation function connecting inner layers
+       :out_activation_m: activation function for the output layer
+       :loss_name: loss function
+       :use_mask: bool, if True use include the mask Input. Avaliable for all loss functions
+       :lamb: float, lagrange multiplier. For mswb_lagrange1 and mswb_lagrange2, loss functions.
+       :training: if True, activate the training behavious of the model (for example evalution during validation of the dropouts).
+       :dropout_prob: float dropout probability
+       :noutnodes: int, number of output nodes
+       :dtype: dtype of the Inputs
+    :Returns:
+       instance of tf.keras.Model
+    '''
     tf.keras.backend.clear_session()
     from . import loss_functions
     if dtype=='float32':
@@ -189,12 +235,12 @@ def create_mw_model(input_shape_w=None, hidden_sizes_w=(5,5), layer_w=layer.Tfbi
     
     input_fea_w=tf.keras.Input(input_shape_w,dtype=dtype) #feats for training the weights part
     input_fea_m=tf.keras.Input(input_shape_m,dtype=dtype) #feats for training the multiplicative bias
-    input_tar=tf.keras.Input((1, 1),dtype=dtype) #targets trug1
-    input_pointpreds=tf.keras.Input((nreas_w, 1),dtype=dtype) # point predicion by point NN
+    input_tar=tf.keras.Input((1, noutnodes),dtype=dtype) #targets trug1
+    input_pointpreds=tf.keras.Input((nreas_w, noutnodes),dtype=dtype) # point predicion by point NN
 
     inputs=[input_fea_w, input_fea_m,input_tar, input_pointpreds] 
 
-    model_w=get_model(hidden_sizes=hidden_sizes_w, activation=activation_w, layer=layer_w)
+    model_w=get_model(hidden_sizes=hidden_sizes_w, activation=activation_w, layer=layer_w, dropout_prob=dropout_prob, noutnodes=noutnodes )
 
     shift=False; shiftval=1.0
     if out_activation_w is None:
@@ -211,17 +257,17 @@ def create_mw_model(input_shape_w=None, hidden_sizes_w=(5,5), layer_w=layer.Tfbi
         else:
             model_w.add(tf.keras.layers.Activation(out_activation_w))
 
-    model_m=get_model(hidden_sizes=hidden_sizes_m, activation=activation_m, layer=layer_m)
+    model_m=get_model(hidden_sizes=hidden_sizes_m, activation=activation_m, layer=layer_m, dropout_prob=dropout_prob, noutnodes=noutnodes)
     if out_activation_m is not None:
         model_m.add(tf.keras.layers.Activation(out_activation_m))
     
-    x=model_w(inputs[0])
-    y=model_m(inputs[1])
+    x=model_w(inputs[0], training=training)
+    y=model_m(inputs[1], training=training)
 
     if loss_name == 'mswcb':
         logger.info("Using %s"%(loss_name))
         if use_mask:
-            input_mask = tf.keras.Input((nreas_w,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas_w,noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.mswcb( inputs[2], x, y, inputs[3], mask=inputs[4])
         else:
@@ -230,7 +276,7 @@ def create_mw_model(input_shape_w=None, hidden_sizes_w=(5,5), layer_w=layer.Tfbi
     if loss_name=='mswrb':
         logger.info("Using %s"%(loss_name))
         if use_mask:
-            input_mask = tf.keras.Input((nreas_w,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas_w,noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.mswrb( inputs[2], x, y, inputs[3], mask=inputs[4])
         else:
@@ -238,10 +284,12 @@ def create_mw_model(input_shape_w=None, hidden_sizes_w=(5,5), layer_w=layer.Tfbi
 
 
     if lamb is not None: logger.info("Using lambda %.3f"%(lamb))
+    else:
+        lamb=1.0
     if loss_name == 'mswcb_lagrange1':
         logger.info("Using %s"%(loss_name))
         if use_mask:
-            input_mask = tf.keras.Input((nreas_w,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas_w,noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.mswcb_lagrange1( inputs[2], x, y, inputs[3], mask=inputs[4], lamb=lamb)
         else:
@@ -249,7 +297,7 @@ def create_mw_model(input_shape_w=None, hidden_sizes_w=(5,5), layer_w=layer.Tfbi
     if loss_name == 'mswcb_lagrange2':
         logger.info("Using %s"%(loss_name))
         if use_mask:
-            input_mask = tf.keras.Input((nreas_w,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas_w,noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.mswcb_lagrange2( inputs[2], x, y, inputs[3], mask=inputs[4], lamb=lamb)
         else:
@@ -267,7 +315,24 @@ def create_mw_model(input_shape_w=None, hidden_sizes_w=(5,5), layer_w=layer.Tfbi
 
 # PROBABILITY NETWORKS 
 def create_probabilistic_model_independentnormal(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer, activation='sigmoid', out_activation=None, loss_name='nll', use_mask=False, use_caseweights=False, lamb=None, dtype='float32' ):
-    import tensorflow as tf
+    '''
+    Model predicting 1D Independent Normal distributions for each case and realization.
+    
+    :Parameters:
+        :input_shape: tuple, shape of the input. Should correspond to the shape of you input data ignoring the first dimension. (nreas,nfeats)
+        :hidden_sizes: tuple,list or array with the number of nodes for each layers
+        :layer: an instance of tf.keras.layers.Layer
+        :activation: activation function connecting inner layers
+        :out_activation: activation function for the output layer
+        :loss_name: loss function
+        :use_mask: bool, if True use include the mask Input. Avaliable for all loss functions
+        :use_caseweights: bool, if True include the weights or caseweights in the Input. Avaliable for mse and msb loss functions.
+        :lamb: float, lagrange multiplier. For mswb_lagrange1 and mswb_lagrange2, loss functions.
+        :dtype: dtype of the Inputs
+    :Returns:
+        instance of tf.keras.Model
+    '''
+
     import tensorflow_probability as tfp
     tf.keras.backend.clear_session()
     from . import loss_functions
@@ -287,7 +352,7 @@ def create_probabilistic_model_independentnormal(input_shape=None, hidden_sizes=
     input_tar=tf.keras.Input((1, 1),dtype=dtype) #targets
     inputs= [input_fea,input_tar]
     
-    model = get_model(hidden_sizes=hidden_sizes, activation=activation, layer=layer, outnodes=0)
+    model = get_model(hidden_sizes=hidden_sizes, activation=activation, layer=layer, noutnodes=0)
     shift=False; shiftval=1.0
 
     #give the mean and the standard deviation
@@ -324,7 +389,25 @@ def create_probabilistic_model_independentnormal(input_shape=None, hidden_sizes=
 
 
 def create_probabilistic_model_mixturenormal(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer, activation='sigmoid', out_activation=None, loss_name='nll', ncomp=1, use_mask=False, use_caseweights=False, lamb=None, dtype='float32' ):
-    import tensorflow as tf
+    '''
+    Model predicting 1D MixtureNormal distributions for each case and realization.
+    
+    :Parameters:
+        :input_shape: tuple, shape of the input. Should correspond to the shape of you input data ignoring the first dimension. (nreas,nfeats)
+        :hidden_sizes: tuple,list or array with the number of nodes for each layers
+        :layer: an instance of tf.keras.layers.Layer
+        :activation: activation function connecting inner layers
+        :out_activation: activation function for the output layer
+        :ncomp: int, number of Normal distributions to combine
+        :loss_name: loss function
+        :use_mask: bool, if True use include the mask Input. Avaliable for all loss functions
+        :use_caseweights: bool, if True include the weights or caseweights in the Input. Avaliable for mse and msb loss functions.
+        :lamb: float, lagrange multiplier. For mswb_lagrange1 and mswb_lagrange2, loss functions.
+        :dtype: dtype of the Inputs
+    :Returns:
+        instance of tf.keras.Model
+    '''
+
     import tensorflow_probability as tfp
     tf.keras.backend.clear_session()
     from . import loss_functions
@@ -442,7 +525,6 @@ def prior(kernel_size, bias_size, dtype=None):
 '''
 
 def prior(kernel_size, bias_size, dtype=None):
-    import tensorflow as tf
     import tensorflow_probability as tfp
     n = kernel_size + bias_size
     prior_model = tf.keras.Sequential(
@@ -458,7 +540,6 @@ def prior(kernel_size, bias_size, dtype=None):
 
 
 def posterior(kernel_size, bias_size, dtype=None):
-    import tensorflow as tf
     import tensorflow_probability as tfp
     n = kernel_size + bias_size
     posterior_model = tf.keras.Sequential(
@@ -472,11 +553,18 @@ def posterior(kernel_size, bias_size, dtype=None):
     return posterior_model
 
 
-def get_bayesian_model(hidden_sizes=(5,5), activation='sigmoid', kl_weight=None):
-    import tensorflow as tf
+def get_bayesian_model(hidden_sizes=(5,5), activation='sigmoid', dropout_prob=0.0 , kl_weight=None, noutnodes=1):
+    '''
+    :Parameters:
+        :hidden_sizes: tuple,list or array with the number of nodes for each layers
+        :activation: activation function connecting inner layers
+        :dropout_prob: float dropout probability
+        :noutnodes: int, number of output nodes
+    :Returns:
+       instance of tf.keras.Sequential
+    '''
     import tensorflow_probability as tfp
     tfd = tfp.distributions
-    
     model = tf.keras.Sequential()
 
     for hidden_size in hidden_sizes:
@@ -485,15 +573,35 @@ def get_bayesian_model(hidden_sizes=(5,5), activation='sigmoid', kl_weight=None)
         model.add(lay )
         if activation is not None:
             model.add(tf.keras.layers.Activation(activation))
+        if dropout_prob>0.0:
+            model.add(tf.keras.layers.Dropout(dropout_prob))
 
     # And the output layer, without activation:
-    lay=tfp.layers.DenseVariational(units=1, make_prior_fn= prior,make_posterior_fn=posterior )
-    model.add(lay)
+    if noutnodes>0: 
+        lay=tfp.layers.DenseVariational(units=noutnode, make_prior_fn= prior,make_posterior_fn=posterior )
+        model.add(lay)
     
     return model
 
-def create_bayesian_model(input_shape=None, hidden_sizes=(5,5),  activation='sigmoid', out_activation=None, loss_name='msb', use_mask=False,use_caseweights=False, lamb=None, kl_weight=None, dtype='float32'):
-    import tensorflow as tf
+def create_bayesian_model(input_shape=None, hidden_sizes=(5,5),  activation='sigmoid', out_activation=None, loss_name='msb', use_mask=False,use_caseweights=False, lamb=None, kl_weight=None,  dropout_prob=0.0,training=None, noutnodes=1,  dtype='float32'):
+    '''
+    :Parameters:
+        :input_shape: tuple, shape of the input. Should correspond to the shape of you input data ignoring the first dimension. (nreas,nfeats)
+        :hidden_sizes: tuple,list or array with the number of nodes for each layers
+        :activation: activation function connecting inner layers
+        :out_activation: activation function for the output layer
+        :loss_name: loss function
+        :use_mask: bool, if True use include the mask Input. Avaliable for all loss functions
+        :use_caseweights: bool, if True include the weights or caseweights in the Input. Avaliable for mse and msb loss functions.
+        :lamb: float, lagrange multiplier. For mswb_lagrange1 and mswb_lagrange2, loss functions.
+        :kl_weight: tensorflow_probability.layers.DenseVariational parameter
+        :dropout_prob: float dropout probability
+        :training: if True, activate the training behavious of the model (for example evalution during validation of the dropouts).
+        :noutnodes: int, number of output nodes
+        :dtype: dtype of the Inputs
+    :Returns:
+        instance of tf.keras.Model
+    '''
     from . import loss_functions
     if dtype=='float32':
         loss_functions.PRECISION=tf.float32
@@ -512,10 +620,9 @@ def create_bayesian_model(input_shape=None, hidden_sizes=(5,5),  activation='sig
     input_tar=tf.keras.Input((1, 1),dtype=dtype) #targets
     inputs= [input_fea,input_tar]
     
-    model = get_bayesian_model(hidden_sizes=hidden_sizes, activation=activation, kl_weight=kl_weight)
+    model = get_bayesian_model(hidden_sizes=hidden_sizes, activation=activation, dropout_prob=dropout_prob,  kl_weight=kl_weight, noutnodes=noutnodes)
     shift=False; shiftval=1.0
 
-    
     if out_activation is None:
         if (loss_name == 'mswb')| (loss_name == 'mswb_lagrange1')| (loss_name == 'mswb_lagrange2'):
             logger.info("Adding sigmoid activation to the last neuron since mswb was called")
@@ -534,7 +641,7 @@ def create_bayesian_model(input_shape=None, hidden_sizes=(5,5),  activation='sig
         else:
                 model.add(tf.keras.layers.Activation(out_activation))
 
-    x=model(inputs[0])
+    x=model(inputs[0], training=training)
 
     
     #distribution_params = tf.keras.layers.Dense(units=2)(x)
@@ -543,7 +650,7 @@ def create_bayesian_model(input_shape=None, hidden_sizes=(5,5),  activation='sig
     if loss_name == 'mse':
         logger.info("Using %s"%(loss_name))
         if use_mask:
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas,noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.mse( inputs[1], x, mask=inputs[2])
         else:
@@ -554,12 +661,12 @@ def create_bayesian_model(input_shape=None, hidden_sizes=(5,5),  activation='sig
         logger.info("Using %s"%(loss_name))
         if use_mask&(~use_caseweights):
             #input_mask = tf.keras.Input(input_shape,dtype=dtype)
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas,noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.msb( inputs[1], x, mask=inputs[2])
         elif use_mask&use_caseweights:
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype); inputs.append(input_mask)
-            input_caseweights = tf.keras.Input((1,1),dtype=dtype); inputs.append(input_caseweights)
+            input_mask = tf.keras.Input((nreas,noutnodes),dtype=dtype); inputs.append(input_mask)
+            input_caseweights = tf.keras.Input((1,noutnodes),dtype=dtype); inputs.append(input_caseweights)
             loss_func =loss_functions.msb( inputs[1], x, mask=inputs[2], caseweights=inputs[3])
         else:
             loss_func=loss_functions.msb( inputs[1], x)
@@ -567,10 +674,10 @@ def create_bayesian_model(input_shape=None, hidden_sizes=(5,5),  activation='sig
     if loss_name == 'msmb':
         logger.info("Using %s"%(loss_name))
 
-        input_pointpreds=tf.keras.Input((nreas, 1),dtype=dtype)
+        input_pointpreds=tf.keras.Input((nreas, noutnodes),dtype=dtype)
         inputs.append(input_pointpreds)
         if use_mask:
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas,noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.msmb( inputs[1], x, inputs[2], mask=inputs[3])
         else:
@@ -579,37 +686,38 @@ def create_bayesian_model(input_shape=None, hidden_sizes=(5,5),  activation='sig
     if loss_name == 'mswb':
         logger.info("Using %s"%(loss_name))
 
-        input_pointpreds=tf.keras.Input((nreas, 1),dtype=dtype)
+        input_pointpreds=tf.keras.Input((nreas, noutnodes),dtype=dtype)
         inputs.append(input_pointpreds)
         if use_mask & ~use_caseweights:
             #input_mask = tf.keras.Input(input_shape,dtype=dtype)
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas,noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.mswb( inputs[1], x, inputs[2], mask=inputs[3])
         elif use_mask & use_caseweights:
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype); inputs.append(input_mask)
-            input_caseweights = tf.keras.Input((1,1),dtype=dtype); inputs.append(input_caseweights)
+            input_mask = tf.keras.Input((nreas,noutnodes),dtype=dtype); inputs.append(input_mask)
+            input_caseweights = tf.keras.Input((1,noutnodes),dtype=dtype); inputs.append(input_caseweights)
             loss_func =loss_functions.msb( inputs[1], x, inputs[2], mask=inputs[3], caseweights=inputs[4])
         else:
             loss_func =loss_functions.mswb( inputs[1], x, inputs[2])
 
     if lamb is not None: logger.info("Using lambda %.3f"%(lamb))
+    else: lamb=1.0
     if loss_name == 'mswb_lagrange1':
         logger.info("Using %s"%(loss_name))
-        input_pointpreds=tf.keras.Input((nreas, 1),dtype=dtype)
+        input_pointpreds=tf.keras.Input((nreas, noutnodes),dtype=dtype)
         inputs.append(input_pointpreds)
         if use_mask:
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas,noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.mswb_lagrange1( inputs[1], x, inputs[2], mask=inputs[3], lamb=lamb)
         else:
             loss_func =loss_functions.mswb_lagrange1( inputs[1], x, inputs[2], lamb=lamb)
     if loss_name == 'mswb_lagrange2':
         logger.info("Using %s"%(loss_name))
-        input_pointpreds=tf.keras.Input((nreas, 1),dtype=dtype)
+        input_pointpreds=tf.keras.Input((nreas, noutnodes),dtype=dtype)
         inputs.append(input_pointpreds)
         if use_mask:
-            input_mask = tf.keras.Input((nreas,1),dtype=dtype)
+            input_mask = tf.keras.Input((nreas,noutnodes),dtype=dtype)
             inputs.append(input_mask)
             loss_func =loss_functions.mswb_lagrange2( inputs[1], x, inputs[2], mask=inputs[3], lamb=lamb)
         else:
