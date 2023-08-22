@@ -39,7 +39,7 @@ jobs:
       - uses: actions/setup-python@v3
       - name: Install dependencies
         run: |
-          pip install sphinx sphinx_rtd_theme myst-parser MLTF scipy
+          pip install sphinx sphinx_rtd_theme myst-parser MLTF scipy matplotlib
       - name: Sphinx build
         run: |
           #cd docs && ls && make html && cd ..
