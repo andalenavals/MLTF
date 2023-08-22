@@ -37,8 +37,6 @@ def mse(targets, preds, mask=None):
         else:
             squarebias=tf.keras.backend.square(preds-targets)
         mse_val=tf.keras.backend.mean(squarebias)
-            
-
     return mse_val
 
 def msb(targets, preds, mask=None, caseweights=None):
