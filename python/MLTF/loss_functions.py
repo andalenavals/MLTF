@@ -13,12 +13,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 
-"""
-File: MLTF/python/loss_functions.py
-
-Created on: 13/09/22
-Author: Andres Navarro
-"""
 import logging
 import tensorflow as tf
 
@@ -26,6 +20,13 @@ logger = logging.getLogger(__name__)
 PRECISION=tf.float32 
 
 def mse(targets, preds, mask=None):
+    '''
+    targets: 3D array or tensor containing the true values desired to predict
+    preds: 3D array or tensor with the predictions from the NN
+    mask: 3D array or tensor, mask for the predictions before calculating loss. 1 means keep, 0 means ignore (opposite definition than maskedarrays mask).
+
+    :math:`\left(f(x)+n, n\right)`
+    '''
     #assert preds[0].get_shape() ==mask[0].get_shape()     
     #assert tf.shape(preds[0])==tf.shape(mask[0])
     if tf.keras.backend.ndim(preds) == 3:
