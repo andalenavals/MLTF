@@ -9,6 +9,14 @@ Point estimate inverse regression
 
 After running you will
 
+.. image:: MLTF/examples/regression/inverse/animations/out/point_noise_regression_animation_2feats_mse/validation/inverse_regression.gif
+  :width: 400
+  :alt: Alternative text
+
+
+.. image:: ../examples/regression/inverse/animations/out/point_noise_regression_animation_2feats_mse/validation/inverse_regression.gif
+  :width: 400
+  :alt: Alternative text
 
 Point estimate inverse regression with Dropout
 ##############################################
