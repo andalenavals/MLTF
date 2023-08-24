@@ -472,9 +472,9 @@ def make_animation(features, targets, checkpoint_path, func, valpath, features_t
     checkpoints_path=os.path.dirname(checkpoint_path)
     #files = sorted(glob.glob(os.path.join(checkpoints_path, "*.h5")))
     #files = sorted(glob.glob(os.path.join(checkpoints_path, "*.ckpt.index")), key=lambda x: int(x.split('.')[1].replace("-0","")))
-    files = sorted(glob.glob(os.path.join(checkpoints_path, "*.ckpt.index")))
+    files =glob.glob(os.path.join(checkpoints_path, "*.ckpt.index"))
     epochs=[int(f.rsplit("epoch:",1)[1].rsplit("_loss")[0]) for f in files]
-    print(epochs)
+    files=np.array(files)[np.argsort(epochs)]
     checkpoints=["".join(f.rsplit(".index",1)) for f in files]
     sel=NFRAMES//2
     step=len(checkpoints)//sel
