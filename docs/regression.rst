@@ -9,7 +9,11 @@ Point estimate inverse regression
 
 Training of NN with one layer of five neurons and one output node using MSE, and the two features mentioned before.
 
-.. image:: MLTF/examples/regression/inverse/animations/out/point_noise_regression_animation_2feats_mse/validation/inverse_regression.gif
+.. image:: ../examples/regression/inverse/animations/out/point_noise_regression_animation_2feats_mse/validation/inverse_regression.gif
+  :width: 600
+
+
+.. image:: ../examples/regression/inverse/animations/out/point_noise_regression_animation_2feats_msb/validation/inverse_regression.gif
   :width: 600
 
 

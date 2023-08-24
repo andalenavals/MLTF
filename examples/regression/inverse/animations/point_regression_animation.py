@@ -51,8 +51,8 @@ logger = logging.getLogger(__name__)
 
 
 #model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':MLTF.layer.TfbilacLayer}
-model_kwargs={'loss_name':'mse', 'use_mask': True, 'hidden_sizes':(5,), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
-#model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
+#model_kwargs={'loss_name':'mse', 'use_mask': True, 'hidden_sizes':(5,), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
+model_kwargs={'loss_name':'msb', 'use_mask': True, 'hidden_sizes':(5,), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
 NFEATS=2
 
 AUXNAME="deleteme.png"
