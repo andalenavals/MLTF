@@ -473,10 +473,13 @@ def make_animation(features, targets, checkpoint_path, func, valpath, features_t
     #files = sorted(glob.glob(os.path.join(checkpoints_path, "*.h5")))
     #files = sorted(glob.glob(os.path.join(checkpoints_path, "*.ckpt.index")), key=lambda x: int(x.split('.')[1].replace("-0","")))
     files = sorted(glob.glob(os.path.join(checkpoints_path, "*.ckpt.index")))
+    epochs=[int(f.rsplit("epoch:",1)[1].rsplit("_loss")[0]) for f in files]
+    print(epochs)
     checkpoints=["".join(f.rsplit(".index",1)) for f in files]
     sel=NFRAMES//2
     step=len(checkpoints)//sel
     #step=1
+    print(files)
 
     #use last 5 check points
     lastcheck=5
@@ -538,7 +541,7 @@ def make_animation(features, targets, checkpoint_path, func, valpath, features_t
         
     fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
     ax.axis('off')
-    ani = anime.ArtistAnimation(fig, ims, interval=200, blit=True)
+    ani = anime.ArtistAnimation(fig, ims, interval=300, blit=True)
     filename=os.path.join(valpath, 'inverse_regression.gif')
     ani.save(filename)
     plt.close(fig)
@@ -601,7 +604,7 @@ def main():
     
     logger.info("Data was done")
 
-    train(features,targets, trainingpath, checkpoint_path, reuse=True, epochs=2025, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
+    train(features,targets, trainingpath, checkpoint_path, reuse=True, epochs=3025, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
 
     features_val,targets_val=makedata(ncases, nreas, f, nmsk_obj, filename=validationcat)
     features_val=features_normer(features_val)
