@@ -59,6 +59,9 @@ SAMPLING_SIZE=500
 AUXNAME="deleteme.png"
 NFRAMES=100
 FIGZISE=(9,4)
+DPI=100
+
+DARKMODE = False # activate or deactivate black and white 
 
 
 def parse_args():
@@ -194,16 +197,27 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     model=MLTF.models.create_model(input_shape, **model_kwargs)
     model.compile(loss=None, optimizer=opt, metrics = [])
 
-    '''
-    if os.path.isfile(checkpoint_path+'.index') & reuse:
-        logger.info("loading checkpoint weights")
-        model.load_weights(checkpoint_path)
-    '''
+    initial_epoch=0
+    dircheck=os.path.dirname(checkpoint_path)
+    print(dircheck)
+    if os.listdir(dircheck):
+        files=glob.glob(os.path.join(dircheck, "*.index"))
+        files.sort(key=lambda x: os.path.getmtime(x))
+        checkpoint_path=files[-1]
+        s=checkpoint_path
+        initial_epoch=int(s[s.find("epoch:")+len("epoch:"):s.rfind("_")])
+        initial_loss=float(s[s.find("loss:")+len("loss:"):s.rfind(".ckpt.index")])
+        print(initial_epoch)
+        print(initial_loss)
+        cp_callback.best = initial_loss
+        if os.path.isfile(checkpoint_path) & reuse:
+            logger.info("loading checkpoint weights")
+            model.load_weights(checkpoint_path.replace(".index",""))
     
     training_data=[features.data, targets, mask]
     
     hist = model.fit(training_data, None, epochs=epochs, verbose=2, 
-                     shuffle=True, batch_size=batch_size,
+                     shuffle=True, batch_size=batch_size, initial_epoch=initial_epoch,
                      validation_split=validation_split, validation_data=validation_data,
                      callbacks=[cp_callback, batch_callback,redlr_callback])
 
@@ -252,7 +266,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     plt.tick_params(axis='both', which='minor', labelsize=20)
     plt.ylim(0.5*min(history), 1.5*max(history))
     plt.tight_layout()
-    plt.savefig(filename,dpi=200)
+    plt.savefig(filename,dpi=DPI)
     plt.close()
 
     filename=os.path.join(trainpath, "history_train_and_batches.png")
@@ -265,7 +279,7 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     plt.tick_params(axis='both', which='minor', labelsize=20)
     plt.ylim(0.5*min(history), 1.5*max(history))
     plt.tight_layout()
-    plt.savefig(filename,dpi=200)
+    plt.savefig(filename,dpi=DPI)
     plt.close()
 
     
@@ -362,7 +376,8 @@ def color_plot_ax(ax,x,y,z=None,yerr=None,colorlog=True,xtitle="",ytitle="",ctit
             ret=linregfunc(x_unmask,y_unmask)
         m,merr,c, cerr=(ret["m"]+1),ret["merr"],ret["c"],ret["cerr"]
         ax.plot(xplot,m*xplot+c, ls='-',linewidth=2, color='red', label='$\mu_{1}$: %.4f $\pm$ %.4f \n  c$_{1}$: %.4f $\pm$ %.4f'%(m,merr,c, cerr ))
-        ax.legend(loc='upper left', prop={'size': ftsize-4}, labelcolor="yellow")
+        if DARKMODE: ax.legend(loc='upper left', prop={'size': ftsize-4}, labelcolor="yellow")
+        else: ax.legend(loc='upper left', prop={'size': ftsize-4})
         
     if colorlog: 
         c=abs(c)
@@ -370,10 +385,11 @@ def color_plot_ax(ax,x,y,z=None,yerr=None,colorlog=True,xtitle="",ytitle="",ctit
     else: colornorm=None
 
 
-    sct=ax.scatter(x, y,c=z, norm=colornorm, marker=".",alpha=0.7,cmap=cmap)
+    sct=ax.scatter(x, y,c=z, norm=colornorm, marker=".",alpha=0.5,cmap=cmap)
 
     if yerr is not None:
-            ebarskwargs = {"fmt":'none', "color":"yellow", "ls":":", 'elinewidth':0.4, 'alpha':0.5}
+            if DARKMODE: ebarskwargs = {"fmt":'none', "color":"yellow", "ls":":", 'elinewidth':0.5, 'alpha':0.5}
+            else : ebarskwargs = {"fmt":'none', "ls":":", 'elinewidth':0.5, 'alpha':0.5}
             ax.errorbar(x, y, yerr=yerr, **ebarskwargs)
 
     
@@ -390,13 +406,14 @@ def color_plot_ax(ax,x,y,z=None,yerr=None,colorlog=True,xtitle="",ytitle="",ctit
         cbar.ax.set_xlabel(ctitle, fontsize=ftsize-2)
         cbar.ax.xaxis.set_label_coords(0.5,1.1)
 
-    for pos in ["left","right","top","bottom"]:
-        ax.spines[pos].set_color('white')
-    ax.yaxis.label.set_color('yellow')
-    ax.xaxis.label.set_color('yellow')
-    ax.tick_params(axis='x', colors='white',which='both')
-    ax.tick_params(axis='y', colors='white',which='both')
-    ax.set_facecolor('black')
+    if DARKMODE:
+        for pos in ["left","right","top","bottom"]:
+            ax.spines[pos].set_color('white')
+        ax.yaxis.label.set_color('yellow')
+        ax.xaxis.label.set_color('yellow')
+        ax.tick_params(axis='x', colors='white',which='both')
+        ax.tick_params(axis='y', colors='white',which='both')
+        ax.set_facecolor('black')
 
 
 def make_plot(x1,y1, y1err, x2a,y2a,x2aerr, x2b,y2b, func, plotname='test.png', vmin=None, vmax=None,ylim=None,xlim=None, title1="", title2=""):
@@ -409,8 +426,11 @@ def make_plot(x1,y1, y1err, x2a,y2a,x2aerr, x2b,y2b, func, plotname='test.png', 
     norm=None
     
     for ax, title in zip([axs[0],axs[1]],[title1, title2]):
-        ax.set_title(title,size=14, color="yellow")
-        ax.patch.set_edgecolor('white')
+        if DARKMODE:
+            ax.set_title(title,size=14, color="yellow")
+            ax.patch.set_edgecolor('white')
+        else:
+            ax.set_title(title,size=14)
         ax.patch.set_linewidth('2') 
         #ax.axis('off')
  
@@ -423,26 +443,36 @@ def make_plot(x1,y1, y1err, x2a,y2a,x2aerr, x2b,y2b, func, plotname='test.png', 
     trud = func(trutheta)
 
     axs[1].plot(x2b, y2b, marker=".", color="gray", ls="None", ms=2, label="Training data samples")
-    ebarskwargs = {"fmt":'none', "ls":":", 'elinewidth':0.5, 'alpha':1.0}
-    axs[1].errorbar(x2a, y2a, xerr=x2aerr,**ebarskwargs)
-    axs[1].plot(x2a, y2a, ls="-", color="yellow", label="Trained with %s"%(model_kwargs['loss_name']), lw=1.5, alpha=0.5)
-    axs[1].plot(trutheta, trud, ls="-", color="white", dashes=(5, 5), lw=2.0, label=r"$d = \sqrt{1 + \theta^2}$")
+    if DARKMODE:
+        ebarskwargs = {"fmt":'none', "ls":":", 'elinewidth':0.5, 'alpha':0.5, "color":"yellow"}
+        axs[1].errorbar(x2a, y2a, xerr=x2aerr,**ebarskwargs)
+        axs[1].plot(x2a, y2a, ls="-", color="yellow", label="Trained with %s"%(model_kwargs['loss_name']), lw=1.5, alpha=0.5)
+        axs[1].plot(trutheta, trud, ls="-", color="white", dashes=(5, 5), lw=2.0, label=r"$d = \sqrt{1 + \theta^2}$")
+        axs[1].legend(loc=2, fontsize=12, markerscale=4, numpoints=1, labelcolor=["gray", "yellow", "white"])
+    else:
+        ebarskwargs = {"fmt":'none', "ls":":", 'elinewidth':0.5, 'alpha':0.5}
+        axs[1].errorbar(x2a, y2a, xerr=x2aerr,**ebarskwargs)
+        axs[1].plot(x2a, y2a, ls="-", label="Trained with %s"%(model_kwargs['loss_name']), lw=1.5, alpha=0.5)
+        axs[1].plot(trutheta, trud, ls="-", color="blue", dashes=(5, 5), lw=2.0, label=r"$d = \sqrt{1 + \theta^2}$")
+        axs[1].legend(loc=2, fontsize=12, markerscale=4, numpoints=1)
+    
     axs[1].set_xlabel(r"$\theta$ $\mathrm{and}$ $\hat{\theta}$", fontsize=18)
     axs[1].set_ylabel(r"$d$", fontsize=18)
-    axs[1].legend(loc=2, fontsize=12, markerscale=4, numpoints=1, labelcolor="green")
+    
     axs[1].set_xlim(-1.2, 2.4)
     axs[1].set_ylim(0.5, 3.0)
 
-    for pos in ["left","right","top","bottom"]:
-        axs[1].spines[pos].set_color('white')
-    axs[1].yaxis.label.set_color('yellow')
-    axs[1].xaxis.label.set_color('yellow')
-    axs[1].tick_params(axis='x', colors='white',which='both')
-    axs[1].tick_params(axis='y', colors='white',which='both')
-    axs[1].set_facecolor('black')
-
+    if DARKMODE: 
+        for pos in ["left","right","top","bottom"]:
+            axs[1].spines[pos].set_color('white')
+        axs[1].yaxis.label.set_color('yellow')
+        axs[1].xaxis.label.set_color('yellow')
+        axs[1].tick_params(axis='x', colors='white',which='both')
+        axs[1].tick_params(axis='y', colors='white',which='both')
+        axs[1].set_facecolor('black')
+        fig.patch.set_facecolor('black')
+    
     fig.tight_layout()
-    fig.patch.set_facecolor('black')
     fig.savefig(plotname, transparent=False) #transparent does not work with gift
     plt.close(fig)
 
@@ -464,7 +494,9 @@ def make_animation(features, targets, checkpoint_path, func, valpath, features_t
     
     checkpoints_path=os.path.dirname(checkpoint_path)
     #files = sorted(glob.glob(os.path.join(checkpoints_path, "*.h5")))
-    files = sorted(glob.glob(os.path.join(checkpoints_path, "*.ckpt.index")), key=lambda x: int(x.split('.')[1].replace("-0","")))
+    files =glob.glob(os.path.join(checkpoints_path, "*.ckpt.index"))
+    epochs=[int(f.rsplit("epoch:",1)[1].rsplit("_loss")[0]) for f in files]
+    files=np.array(files)[np.argsort(epochs)]
     checkpoints=["".join(f.rsplit(".index",1)) for f in files]
     sel=NFRAMES//2
     step=len(checkpoints)//sel
@@ -495,6 +527,12 @@ def make_animation(features, targets, checkpoint_path, func, valpath, features_t
         preds_variance=np.ma.var(predictions, axis=0)
     
         val_biases_msb = np.ma.mean(preds_mean, axis=1, keepdims=True) - targets
+
+        loss_val_direct=np.ma.mean(np.square(val_biases_msb))    
+        loss_val=MLTF.loss_functions.msb(tf.convert_to_tensor(targets.astype('float32')), tf.convert_to_tensor(preds_mean.astype('float32')), mask=tf.convert_to_tensor((mask*1.0).astype('float32')))
+        loss_val_file=float(f.rsplit("_loss:",1)[1].rsplit(".ckpt")[0])
+        epoch=int(f.rsplit("epoch:",1)[1].rsplit("_loss")[0])
+        print(loss_val_direct,loss_val.numpy(),loss_val_file  )
 
         #nreas=preds_variance.shape[1]
         nreas=np.sum(~preds_variance.mask,axis=1) 
@@ -534,7 +572,7 @@ def make_animation(features, targets, checkpoint_path, func, valpath, features_t
         y2b =features_1d[showtrainindices]
 
         filename=os.path.join(valpath, AUXNAME)
-        make_plot(x1,y1, y1err, x2a,y2a,x2aerr, x2b,y2b, func, plotname=filename, ylim=[-0.04,0.05], title1="Loss: %.2e"%(float("0.%s"%(f.split(".")[2]))), title2="Epoch: %s"%(f.split(".")[1]).replace("-0","") )#, vmin=0, vmax=0.015, ylim=[-0.1,0.1])
+        make_plot(x1,y1,y1err, x2a,y2a, x2aerr, x2b,y2b, func, plotname=filename, ylim=[-0.04,0.05], title1="%s: %.2e"%(model_kwargs["loss_name"].upper(),loss_val_file), title2="Epoch: %i"%(epoch) )#, vmin=0, vmax=0.015, ylim=[-0.1,0.1])
         im = ax.imshow(plt.imread(filename), animated = True)
         ims.append([im])
 
@@ -578,7 +616,8 @@ def main():
     validationcat=os.path.join(outpath, "data", "valcat.pkl")
     testcat=os.path.join(outpath, "data", "testcat.pkl")
 
-    checkpoint_path=os.path.join(checkpointpath, "simple_regression.{epoch:02d}-{loss:.10f}.ckpt")
+    checkpoint_path=os.path.join(checkpointpath, "epoch:{epoch:1d}_loss:{loss:.3e}.ckpt")
+    #checkpoint_path=os.path.join(checkpointpath, "simple_regression.{epoch:02d}-{loss:.10f}.ckpt")
     #checkpoint_path=os.path.join(checkpointpath, "simple_regression.{epoch:02d}-{loss:.10f}.h5")
 
     
@@ -605,7 +644,7 @@ def main():
     
     logger.info("Data was done")
 
-    #train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=200000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
+    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=50000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
 
     features_val,targets_val=makedata(ncases, nreas, f, nmsk_obj, filename=validationcat)
     features_val=features_normer(features_val)

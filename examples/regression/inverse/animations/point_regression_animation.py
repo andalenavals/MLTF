@@ -430,14 +430,14 @@ def make_plot(x1,y1, x2a,y2a, x2b, y2b, func, plotname='test.png', vmin=None, vm
     if DARKMODE:
         axs[1].plot(x2a, y2a, ls="-", color="yellow", label="Trained with %s"%(model_kwargs['loss_name']), lw=1.5, alpha=0.5)
         axs[1].plot(trutheta, trud, ls="-", color="white", dashes=(5, 5), lw=2.0, label=r"$d = \sqrt{1 + \theta^2}$")
+        axs[1].legend(loc=2, fontsize=12, markerscale=4, numpoints=1, labelcolor=["gray", "yellow", "white"])
     else:
         axs[1].plot(x2a, y2a, ls="-", label="Trained with %s"%(model_kwargs['loss_name']), lw=1.5, alpha=0.5)
         axs[1].plot(trutheta, trud, ls="-", color="blue", dashes=(5, 5), lw=2.0, label=r"$d = \sqrt{1 + \theta^2}$")
+        axs[1].legend(loc=2, fontsize=12, markerscale=4, numpoints=1)
     
     axs[1].set_xlabel(r"$\theta$ $\mathrm{and}$ $\hat{\theta}$", fontsize=18)
     axs[1].set_ylabel(r"$d$", fontsize=18)
-    #axs[1].legend(loc=2, fontsize=12, markerscale=4, numpoints=1, labelcolor="green")
-    axs[1].legend(loc=2, fontsize=12, markerscale=4, numpoints=1)
     axs[1].set_xlim(-1.2, 2.4)
     axs[1].set_ylim(0.5, 3.0)
 
@@ -479,8 +479,6 @@ def make_animation(features, targets, checkpoint_path, func, valpath, features_t
     sel=NFRAMES//2
     step=len(checkpoints)//sel
     #step=1
-    print(files)
-
     #use last 5 check points
     lastcheck=5
     indxs=[len(checkpoints)-1-i for i in range(lastcheck)]
