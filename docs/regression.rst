@@ -7,16 +7,12 @@ We created 3D mock data with the structure (ncases, nreas, nfeats). Where ncases
 Point estimate inverse regression
 #################################
 
-After running you will
+Training of NN with one layer of five neurons and one output node using MSE, and the two features mentioned before.
 
 .. image:: MLTF/examples/regression/inverse/animations/out/point_noise_regression_animation_2feats_mse/validation/inverse_regression.gif
   :width: 600
-  :alt: Alternative 2
 
 
-.. image:: ../examples/regression/inverse/animations/out/point_noise_regression_animation_2feats_mse/validation/inverse_regression.gif
-  :width: 600
-  :alt: Alternative 1
 
 Point estimate inverse regression with Dropout
 ##############################################

@@ -541,7 +541,7 @@ def make_animation(features, targets, checkpoint_path, func, valpath, features_t
         
     fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
     ax.axis('off')
-    ani = anime.ArtistAnimation(fig, ims, interval=300, blit=True)
+    ani = anime.ArtistAnimation(fig, ims, interval=200, blit=True)
     filename=os.path.join(valpath, 'inverse_regression.gif')
     ani.save(filename)
     plt.close(fig)
