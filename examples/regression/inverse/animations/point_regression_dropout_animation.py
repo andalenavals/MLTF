@@ -600,7 +600,7 @@ def main():
     
     outpath = os.path.expanduser(args.workdir)
     make_dir(outpath)
-    example_path='point_noise_regression_dropout_animation_%ifeats_%s'%(NFEATS, model_kwargs['loss_name'])
+    example_path='point_noise_regression_dropout_animation_%ifeats_%s_dp%.2f'%(NFEATS, model_kwargs['loss_name'], model_kwargs['dropout_prob'])
     
     trainingpath = os.path.expanduser(os.path.join(outpath,example_path, "training"))
     make_dir(trainingpath)
@@ -644,7 +644,7 @@ def main():
     
     logger.info("Data was done")
 
-    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=50000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
+    #train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=1000000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
 
     features_val,targets_val=makedata(ncases, nreas, f, nmsk_obj, filename=validationcat)
     features_val=features_normer(features_val)
