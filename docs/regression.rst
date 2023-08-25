@@ -33,3 +33,7 @@ Training of NN with one layer of five neurons, one output node, MSB loss functio
   :width: 600
   :alt: dropout probability of 0.4
 
+	
+Probabilistic estimate inverse regression with IndependentNormal
+################################################################
+
