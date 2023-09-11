@@ -283,11 +283,11 @@ def nll_normal(targets, pred_mu, pred_var, mask=None, weights=None):
     :Parameters:
         :targets: 3D array containing the true values to be predicted, :math:`p^{\mathrm{true}}`.
         :pred_mu:  3D array with the predicted mean of the normal, :math:`\hat{\mu}`.
-        :pred_var:  3D array with the predicted stdv of the normal, :math:`\hat{\sigma^{2}}`.
+        :pred_var:  3D array with the predicted variance of the normal, :math:`\hat{\sigma^{2}}`.
         :mask: 3D array acting as a mask for predictions before loss calculation. A value of 1 indicates to keep the prediction, while 0 indicates to ignore it. (Note: The mask's definition is opposite to that of masked arrays.)
 
     :Returns:
-        :math:`-\frac{1}{n_{\mathrm{case}}n_{\mathrm{rea}}} \sum_{k=1}^{n_{case}} \sum_{j=1}^{n_{\mathrm{rea}}} \log{\hat{\sigma}_{jk}}+0.5\left( \frac{ p^{\mathrm{true}}-\hat{\mu}_{jk}}{\hat{\sigma}_{jk}} \right)^{2} `
+        :math:`-\frac{1}{n_{\mathrm{case}}n_{\mathrm{rea}}} \sum_{k=1}^{n_{case}} \sum_{j=1}^{n_{\mathrm{rea}}} \log{\hat{\sigma}_{jk}}+0.5\left( \frac{ p^{\mathrm{true}}-\hat{\mu}_{jk}}{\hat{\sigma}_{jk}} \right)^{2}`
     """
     if tf.keras.backend.ndim(pred_mu) == 3:
         #this is just for stability
