@@ -276,3 +276,41 @@ def nll(targets, pred_distribution , mask=None):
     val=tf.keras.backend.mean(NLL)
 
     return val
+
+
+def nll_normal(targets, pred_mu, pred_var, mask=None, weights=None):
+    r"""
+    :Parameters:
+        :targets: 3D array containing the true values to be predicted, :math:`p^{\mathrm{true}}`.
+        :pred_mu:  3D array with the predicted mean of the normal, :math:`\hat{\mu}`.
+        :pred_var:  3D array with the predicted stdv of the normal, :math:`\hat{\sigma^{2}}`.
+        :mask: 3D array acting as a mask for predictions before loss calculation. A value of 1 indicates to keep the prediction, while 0 indicates to ignore it. (Note: The mask's definition is opposite to that of masked arrays.)
+
+    :Returns:
+        :math:`-\frac{1}{n_{\mathrm{case}}n_{\mathrm{rea}}} \sum_{k=1}^{n_{case}} \sum_{j=1}^{n_{\mathrm{rea}}} \log{\hat{\sigma}_{jk}}+0.5\left( \frac{ p^{\mathrm{true}}-\hat{\mu}_{jk}}{\hat{\sigma}_{jk}} \right)^{2} `
+    """
+    if tf.keras.backend.ndim(pred_mu) == 3:
+        #this is just for stability
+        pred_varu=tf.keras.backend.maximum(pred_var, 1.e-6)
+        if mask is not None:
+            npoints=tf.cast(tf.shape(pred_mu)[0]*tf.shape(pred_mu)[1], PRECISION)
+            mask_factor=npoints/tf.keras.backend.sum(mask)
+            squarebias=mask_factor*tf.keras.backend.square(mask*(pred_mu-targets))/pred_varu
+            nll=mask_factor*mask*tf.keras.backend.log(pred_varu)+squarebias 
+        else:
+            squarebias=tf.keras.backend.square(pred_mu-targets)/pred_varu
+            nll=tf.keras.backend.log(pred_varu)+squarebias
+
+        if weights is not None:
+            logger.debug("Using case weights")
+            num = tf.keras.backend.mean(weights*nll)
+            den = tf.keras.backend.mean(weights )
+            rval=num/den
+        else:
+            logger.debug("Not using case weights")
+            rval=tf.keras.backend.mean(nll)
+
+        #rval=tf.keras.backend.maximum(rval, 1.e-6)
+        #rval=tf.keras.backend.abs(rval)
+
+    return rval

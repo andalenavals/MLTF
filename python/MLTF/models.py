@@ -312,6 +312,78 @@ def create_mw_model(input_shape_w=None, hidden_sizes_w=(5,5), layer_w=layer.Tfbi
     return full_model
 
 
+def create_musigma_model(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer, activation='sigmoid', out_activation=None, loss_name='nll_normal', use_mask=False, use_caseweights=False, dropout_prob=0.0,training=None,  dtype='float32' ):
+    '''
+    Model predicting 1D Independent Normal distributions for each case and realization.
+    
+    :Parameters:
+        :input_shape: tuple, shape of the input. Should correspond to the shape of you input data ignoring the first dimension. (nreas,nfeats)
+        :hidden_sizes: tuple,list or array with the number of nodes for each layers
+        :layer: an instance of tf.keras.layers.Layer
+        :activation: activation function connecting inner layers
+        :out_activation: activation function for the output layer (this will affect only mu)
+        :loss_name: loss function
+        :loss_name: loss function
+        :use_mask: bool, if True use include the mask Input. Avaliable for all loss functions
+        :use_caseweights: bool, if True include the weights or caseweights in the Input. Avaliable for mse and msb loss functions.
+        :dropout_prob: float dropout probability
+        :training: if True, activate the training behavious of the model (for example evalution during validation of the dropouts).
+        :dtype: dtype of the Inputs
+    :Returns:
+        instance of tf.keras.Model
+    '''
+    from . import loss_functions
+    tf.keras.backend.clear_session()
+    from . import loss_functions
+    if dtype=='float32':
+        loss_functions.PRECISION=tf.float32
+    if dtype=='float16':
+        loss_functions.PRECISION=tf.float16 
+    
+    if input_shape is not None:
+        nreas = input_shape[0]
+        nfeas = input_shape[1]
+    else:
+        nreas=None
+        nfeas=None
+        input_shape=(nreas,nfeas)
+    input_fea=tf.keras.Input(input_shape,dtype=dtype) #feat
+    input_tar=tf.keras.Input((1, 1),dtype=dtype) #targets
+    inputs= [input_fea,input_tar]
+    
+    model = get_model(hidden_sizes=hidden_sizes, activation=activation, layer=layer, noutnodes=0)
+    shift=False; shiftval=1.0
+
+    #give the mean and the standard deviation
+    distribution_params = tf.keras.layers.Dense(units=2)(model(inputs[0]))
+
+    mean=tf.slice(distribution_params,[0,0,0],[-1,-1,1], name="mu")
+    sigma=tf.slice(distribution_params,[0,0,1],[-1,-1,1], name="sigma")
+    #std=tf.keras.layers.Activation("sigmoid")(sigma)
+    std=tf.keras.layers.Activation("softplus")(sigma)
+    #std=tf.keras.layers.Activation("relu")(sigma)
+
+   
+    if loss_name == 'nll_normal':
+        logger.info("Using %s"%(loss_name))
+        if use_mask:
+            # 2 because one prediction is the mean and the other is std
+            input_mask = tf.keras.Input((nreas,2),dtype=dtype)
+            inputs.append(input_mask)
+            loss_func =loss_functions.nll_normal( inputs[1], mean, std, mask=inputs[2])
+        else:
+            loss_func=loss_functions.nll_normal( inputs[1], mean, std)
+
+    # Adding loss function is problematic when trying multiprocessing
+    logger.debug("Trying to add model to loss function")
+    model=tf.keras.Model(inputs=inputs,outputs=[mean,std])
+    model.add_loss(loss_func)
+    
+    logger.debug("Loss function successfully added to the the model")
+    #model.compile(loss=None, optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), metrics = [])
+    return model
+
+
 
 # PROBABILITY NETWORKS 
 def create_probabilistic_model_independentnormal(input_shape=None, hidden_sizes=(5,5), layer=layer.TfbilacLayer, activation='sigmoid', out_activation=None, loss_name='nll', use_mask=False, use_caseweights=False, lamb=None, dtype='float32' ):

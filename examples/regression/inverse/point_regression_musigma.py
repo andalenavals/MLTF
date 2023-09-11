@@ -27,7 +27,7 @@ warnings.filterwarnings(
         message=r"tostring\(\) is deprecated\. Use tobytes\(\) instead\.")
 
 
-import os
+import sys, os
 import MLTF
 import numpy as np
 import random
@@ -41,16 +41,14 @@ plt.style.use('style.mplstyle')
 import tensorflow as tf
 if float(tf.__version__[:3]) < 2.0:
     print("Using eager execution")
-    tf.compat.v1.enable_eager_execution()
-    #tf.enable_eager_execution()
+    #tf.compat.v1.enable_eager_execution()
+    tf.enable_eager_execution()
     
 import logging
 logger = logging.getLogger(__name__)
 
 
-
-#model_kwargs={'loss_name':'nll', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':MLTF.layer.TfbilacLayer}
-model_kwargs={'loss_name':'nll', 'use_mask': True, 'hidden_sizes':(5,5), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
+model_kwargs={'loss_name':'nll_normal', 'use_mask': True, 'hidden_sizes':(3,), 'activation':'sigmoid', 'layer':tf.keras.layers.Dense}
 NFEATS=2
 
 def parse_args():
@@ -61,7 +59,7 @@ def parse_args():
                         help='diractory of work')
     parser.add_argument('--train', default=False,
                         action='store_const', const=True, help='Train point estimate')
-    parser.add_argument('--validate_', default=False,
+    parser.add_argument('--validate', default=False,
                         action='store_const', const=True, help='Validate point estimate')
     parser.add_argument('--finetune', default=False,
                         action='store_const', const=True, help='Use SGD for getting as low as possible in the converged region')
@@ -76,7 +74,7 @@ def noise(n): return np.random.randn(n)
 def f(x): return np.sqrt(1.0 + x**2)
 def g(x): return x**3
 
-def makedata(ncases, nreas, func, nmsk_obj=0, noise_scale=0.1, theta_min=0.25 , theta_max=2.0, filename=None):
+def makedata(ncases, nreas, func, nmsk_obj=0, noise_scale=0.1, theta_min=0.25 , theta_max=2.0, filename=None, shuffle=True):
 
     if filename is not None:
         if os.path.exists(filename):
@@ -133,9 +131,13 @@ def makedata(ncases, nreas, func, nmsk_obj=0, noise_scale=0.1, theta_min=0.25 , 
         features=np.ma.array(features, mask=~mask0)
         logger.info('Number of blacklisted cases: %i'%len(bl_cases))
 
+    if shuffle:
+        ncases=targets.shape[0]
+        ind=np.random.choice(range(ncases),size=ncases, replace=False)
+        targets=targets[ind]
+        features=features[ind]
     logger.info("Data was done")
-    if filename is not None:
-        with open(filename, 'wb') as handle:
+    with open(filename, 'wb') as handle:
             pickle.dump([features, targets], handle, -1)
     
     return features, targets
@@ -149,50 +151,50 @@ def maketestdata(ncases=100):
     return features_test
 
 
-def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetune=False, epochs=1000, validation_data=None, validation_split=None, batch_size=None ):
+def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetune=True, epochs=1000, validation_split=None, validation_data=None, batch_size=None):
     mask =np.all(~features.mask,axis=2,keepdims=True)
     caseweights=None
+    
+    #features_normer=MLTF.normer.Normer(features, type=inputtype)
+    #features=features_normer(features)
 
     cp_callback = tf.keras.callbacks.ModelCheckpoint(checkpoint_path, 
-                                                     monitor='loss',
+                                                     monitor='loss',#"loss"
                                                      save_weights_only=True,
                                                      save_best_only= True,
                                                      verbose=1, 
                                                      save_freq='epoch')
-    
+
     batch_callback=MLTF.tools.BCP()
     redlr_callback=tf.keras.callbacks.ReduceLROnPlateau( monitor="loss",
                                                          factor=0.1,
-                                                         patience=100,
+                                                         patience=5000,
                                                          verbose=1,
                                                          mode="auto",
                                                          min_delta=1e-10,
                                                          cooldown=0,
                                                          min_lr=0,)
 
-    
-    callbacks=[cp_callback, redlr_callback]
-    if batch_size is not None:
-        batch_callback=MLTF.tools.BCP()
-        callbacks.append(batch_callback)
-
-
+    #input_shape=features[0].shape #(nreas, nfeas)
     input_shape=(None, features[0].shape[1])
-    #input_shape=features[0].shape
+
     
-    opt=tf.keras.optimizers.Adam(learning_rate=0.1)
+    opt=tf.keras.optimizers.Adam(learning_rate=0.01)
     #opt=tf.keras.optimizers.SGD(learning_rate=0.1)
-    model=MLTF.models.create_probabilistic_model_independentnormal(input_shape, **model_kwargs)
+    model=MLTF.models.create_musigma_model(input_shape, **model_kwargs)
     model.compile(loss=None, optimizer=opt, metrics = [])
+    
     if os.path.isfile(checkpoint_path+'.index') & reuse:
         logger.info("loading checkpoint weights")
         model.load_weights(checkpoint_path)
         model.compile(loss=None, optimizer=opt, metrics = [])
-
+    
     training_data=[features.data, targets, mask]
+    
     hist = model.fit(training_data, None, epochs=epochs, verbose=2, 
-                      shuffle=True, batch_size=batch_size,  validation_data=validation_data,
-                      callbacks=callbacks)
+                     shuffle=True, batch_size=batch_size,
+                     validation_split=validation_split, validation_data=validation_data,
+                     callbacks=[cp_callback, batch_callback,redlr_callback])
 
     history_path=os.path.join(trainpath, "history.txt")
     history = MLTF.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
@@ -202,44 +204,42 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
     if batch_size is not None:
         history_path=os.path.join(trainpath, "history_batches.txt")
         batch_hist=np.array(np.split(np.array(batch_callback.batch_loss), epochs)).T.tolist()
-        if not finetune: history_batch= MLTF.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
-
+        history_batch= MLTF.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
+  
     if finetune:
         reuse=True
-        model=MLTF.models.create_probabilistic_model_independentnormal(input_shape, **model_kwargs)
+        fine_batch_callback=MLTF.tools.BCP()
+        model=MLTF.models.create_model(input_shape, **model_kwargs)
         opt=tf.keras.optimizers.SGD(learning_rate=0.1)
         model.compile(loss=None, optimizer=opt, metrics = [])
         if os.path.isfile(checkpoint_path+'.index') & reuse:
             logger.info("loading checkpoint weights")
             model.load_weights(checkpoint_path)
-        hist = model.fit([features, targets, mask], None,
-                         epochs=epochs, verbose=2, shuffle=True,
-                         batch_size=batch_size,
-                         validation_data=validation_data,
-                         validation_split=validation_split,
-                         callbacks=callbacks)
+        hist = model.fit(training_data, None, epochs=epochs, verbose=2, 
+                         shuffle=True, batch_size=batch_size,
+                         validation_split=validation_split, validation_data=validation_data,
+                         callbacks=[cp_callback, fine_batch_callback])
+
         history_path=os.path.join(trainpath, "history.txt")
         history = MLTF.tools.check_history(hist, history_path, loss='loss',reuse=reuse)
+        
         if (validation_data is not None)|(validation_split is not None):
             history_path=os.path.join(trainpath, "history_val.txt")
             history_val = MLTF.tools.check_history(hist, history_path, loss='val_loss',reuse=reuse)
         if batch_size is not None:
             history_path=os.path.join(trainpath, "history_batches.txt")
-            batch_hist=np.array(np.split(np.array(batch_callback.batch_loss), epochs+epochs)).T.tolist()
-            history_batch= MLTF.tools.check_history_batch(batch_hist, history_path, reuse=reuse)  
+            batch_hist=np.array(np.split(np.array(fine_batch_callback.batch_loss), epochs)).T.tolist()
+            history_batch= MLTF.tools.check_history_batch(batch_hist, history_path, reuse=reuse)
 
-    #history=np.array(history)-np.min(history)+1
-    #if (validation_data is not None)|(validation_split is not None): history_val=np.array(history_val)-np.min(history_val)+1
-    #if batch_size is not None: history_batch=np.array(history_batch)-np.min(history_batch)+1
-    
-    xscalelog=True; yscalelog=True
+    xscalelog=True
+    yscalelog=False
     filename=os.path.join(trainpath, "history_train_and_val.png")
     fig, ax = plt.subplots()
     MLTF.plot.plot_history_ax(ax,history, xscalelog=xscalelog, yscalelog=yscalelog, label="Training set")
     if (validation_data is not None)|(validation_split is not None): MLTF.plot.plot_history_ax(ax,history_val, xscalelog=xscalelog, yscalelog=yscalelog, label="Validation set")    
     plt.tick_params(axis='both', which='major', labelsize=20)
     plt.tick_params(axis='both', which='minor', labelsize=20)
-    plt.ylim(0.5*min(history), 1.5*max(history))
+    #plt.ylim(0.5*min(history), 1.5*max(history))
     plt.tight_layout()
     plt.savefig(filename,dpi=200)
     plt.close()
@@ -252,65 +252,57 @@ def train(features, targets, trainpath, checkpoint_path=None, reuse=True, finetu
             MLTF.plot.plot_history_ax(ax,h, xscalelog=xscalelog, yscalelog=yscalelog, label="Minibatch %i"%(i+1))    
     plt.tick_params(axis='both', which='major', labelsize=20)
     plt.tick_params(axis='both', which='minor', labelsize=20)
-    plt.ylim(0.5*min(history), 1.5*max(history))
+    #plt.ylim(0.5*min(history), 1.5*max(history))
     plt.tight_layout()
     plt.savefig(filename,dpi=200)
     plt.close()
+
     
     logger.info("***--- TRAINING FINISHED --- ***")
 
     
+
 def validate(features, targets, checkpoint_path, valpath, targets_normer):
     
     MAX_NPOINTS=5000
     
     targets=targets_normer.denorm(targets)
     mask =np.all(~features.mask,axis=2,keepdims=True)
-    
-    
+
     input_shape=features[0].shape #(nreas, nfeas)
-    model=MLTF.models.create_probabilistic_model_independentnormal(input_shape, **model_kwargs )
+    model=MLTF.models.create_musigma_model(input_shape, **model_kwargs )
     model.load_weights(checkpoint_path)
-
     if float(tf.__version__[:3]) >2.0:
-        pred=model([features, tf.constant(0, shape=(features.shape[0], 1 , 1)), tf.constant(0, shape=features.shape)])
+        pred_mu, pred_var = model([features, tf.constant(0, shape=(features.shape[0], 1 , 1)), tf.constant(0, shape=features.shape)])#.numpy()
     elif float(tf.__version__[:3]) <2.0:
-        pred=model(features.astype('float32'))
-    preds = pred.mean().numpy()
-       preds_variance = pred.variance().numpy()
+        pred_mu, pred_var = model(features.astype('float32')).numpy()
+    pred_mu=np.ma.array(pred_mu,mask=~mask)
+    pred_var=np.ma.array(pred_var,mask=~mask)
+    pred_mu=targets_normer.denorm(pred_mu)
 
-    preds=np.ma.array(preds,mask=~mask)
-    preds=targets_normer.denorm(preds)
-    # since the normer is linerar Var(f(X))=[f'(EX)]^2 Var(X)
-    # f(x)=(x-a)/b; if type="-11" f(x)=2*(x-a)/b -1
+    val_biases_msb = np.mean(pred_mu, axis=1, keepdims=True) - targets
+
+    loss_val_direct=np.mean(np.square(val_biases_msb))    
+    mask=tf.convert_to_tensor((mask*1.0).astype('float32'))
+    loss_val=MLTF.loss_functions.nll_normal(tf.convert_to_tensor(targets.astype('float32')), tf.convert_to_tensor(pred_mu.astype('float32')), tf.convert_to_tensor(pred_var.astype('float32')), mask=mask)
+    print(loss_val_direct,loss_val.numpy())
+
+    # since the normer is linear Var(f(X))=[f'(EX)]^2 Var(X)
+    # n(x)=(x-a)/b; if type="-11" n(x)=2*(x-a)/b -1; where a is min(x), b= max(x)-a
+    # we are usin denorm, therefore f(x) is the inverse of n(x)
+    # n_inv(x)= bx+a; if type="-11"" n_inv(x)=0.5*b*(x+1)+a
     #preds_variance=np.ma.array(preds_variance,mask=~mask)
 
 
     fprima=1./targets_normer.b
     if targets_normer.type=="-11": fprima*=2
-    preds_variance=np.ma.array(preds_variance,mask=~mask)/(fprima**2)
-    
-    
-    val_biases_msb = np.ma.mean(preds, axis=1, keepdims=True) - targets
-    #nreas=preds_variance.shape[1]
-    nreas=np.sum(~preds_variance.mask,axis=1)
-    val_biases_msb_err = (1/nreas)*np.ma.sqrt(np.ma.sum(preds_variance, axis=1, keepdims=True))
-    val_biases_msb_err=val_biases_msb_err[:,0,0]
-    #val_biases_msb_err=None
+    preds_variance=pred_var/(fprima**2)
+    nreas=np.sum(~preds_variance.mask,axis=1) 
+    val_biases_msb_err = (1/nreas)*np.ma.sqrt(np.ma.sum(preds_variance, axis=1))
 
-    '''
-    loss_val_direct=np.mean(np.square(val_biases_msb))
-    print(loss_val_direct)
-    '''
-
-    '''
-    mask=tf.convert_to_tensor((mask*1.0).astype('float32'))
-    loss_val=MLTF.loss_functions.msb(tf.convert_to_tensor(targets).astype('float32'), pred, mask=mask)
-    print(loss_val.numpy())
-    '''    
-        
+    
     filename=os.path.join(valpath, "bias_vs_targets.png")
-    MLTF.plot.color_plot(np.ma.array(targets[:,0,0], mask=False),val_biases_msb[:,0,0], None ,False, r"$\theta$" ,r"$\langle \hat{\theta} - \theta \rangle$", "" , yerr=val_biases_msb_err, title="", ftsize=18,cmap="gnuplot", filename=filename, npoints_plot=MAX_NPOINTS, linreg=True, alpha_err=1.0)
+    MLTF.plot.color_plot(np.ma.array(targets[:,0,0],mask=False) ,val_biases_msb[:,0,0],None,False, r"$\theta$" ,r"$\langle \hat{\theta} - \theta \rangle$", "" , yerr=val_biases_msb_err[:,0], title="", ftsize=18,cmap="gnuplot", filename=filename, npoints_plot=MAX_NPOINTS, linreg=True)
     
 
         
@@ -318,51 +310,54 @@ def validate(features, targets, checkpoint_path, valpath, targets_normer):
 
 
 def test(features, targets, checkpoint_path, func, path, features_test, targets_normer, features_normer):
-    '''
-    features: training features
-    targets: training targets
-    '''
+    #features: training features
+    #targets: training targets
     
-    mask_test =np.all(~features_test.mask,axis=2,keepdims=True)
+    mask_test =np.all(~features_test.mask,axis=2,keepdims=True)       
     
     #Loading model
     input_shape=features_test[0].shape #(nreas, nfeas)
-    model=MLTF.models.create_probabilistic_model_independentnormal(input_shape, **model_kwargs)
+    model=MLTF.models.create_musigma_model(input_shape, **model_kwargs)
     model.load_weights(checkpoint_path)
     if float(tf.__version__[:3]) >2.0:
-        test_preds = model.predict([features_test, tf.constant(0, shape=features_test.shape), tf.constant(0, shape=features_test.shape)]).mean().numpy()
-        test_preds_std = model.predict([features_test, tf.constant(0, shape=features_test.shape), tf.constant(0, shape=features_test.shape)]).stddev().numpy()
+        pred_mu, pred_var = model.predict([features_test, tf.constant(0, shape=features_test.shape), tf.constant(0, shape=features_test.shape)])
     elif float(tf.__version__[:3]) <=2.0:
-        test_preds = model(features_test.astype('float32')).mean().numpy()
-        test_preds_std = model(features_test.astype('float32')).stddev().numpy()
+        pred_mu, pred_var = model(features_test.astype('float32')).numpy()
+    pred_mu=np.ma.array(pred_mu,mask=~mask_test)
+    pred_mu=targets_normer.denorm(pred_mu)
 
-    test_preds=np.ma.array(test_preds,mask=~mask_test)
-    test_preds=targets_normer.denorm(test_preds)
-
+    
     fprima=1./targets_normer.b
     if targets_normer.type=="-11": fprima*=2
-    test_preds_std=np.ma.array(test_preds_std,mask=~mask_test)/(fprima)
+    test_preds_variance=np.ma.array(pred_var, mask=~mask_test)/(fprima**2)
+    #test_preds_variance=np.ma.array(pred_var, mask=~mask_test)*(fprima**2)
+    nreas=np.sum(~test_preds_variance.mask,axis=1) 
+    test_val_biases_msb_err = (1/nreas)*np.ma.sqrt(np.ma.sum(test_preds_variance, axis=1))
+
 
     #Selecting few training data points for the plot
     npoints=10000
-    targets_1d = np.concatenate(targets_normer.denorm(targets).T)[0]
-    features_1d = np.concatenate(features_normer.denorm(features)[:,:,0].T)
+    targets_1d = np.ma.concatenate(targets_normer.denorm(targets).T)[0]
+    features_1d = np.ma.concatenate(features_normer.denorm(features)[:,:,0].T)
     showtrainindices = np.arange(targets_1d.size)
     np.random.shuffle(showtrainindices)
     showtrainindices = showtrainindices[:npoints]
     targets_1d= targets_1d[showtrainindices]
     features_1d = features_1d[showtrainindices]
+
     features_test=features_normer.denorm(features_test)
-        
+
     # True function    
     trutheta = np.linspace( -1.0, 2.2, 100)
     trud = func(trutheta)
     color_cycle = ["#1b9e77", "#d95f02", "#7570b3"]
 
     plt.plot(targets_1d, features_1d, marker=".", color="gray", ls="None", ms=2, label="Training data samples")
-    ebarskwargs = {"fmt":'none', "color":color_cycle[2], "ls":":", 'elinewidth':0.5, 'alpha':1.0}
-    plt.errorbar(test_preds[:,0,0], features_test[:,0,0], xerr=test_preds_std[:,0,0],**ebarskwargs)
-    plt.plot(test_preds[:,:,0], features_test[:,:,0], ls="-", color=color_cycle[2], label="Trained with %s"%(model_kwargs['loss_name']), lw=1.5, alpha=0.5)
+    ebarskwargs = {"fmt":'none', "ls":":", 'elinewidth':0.5, 'alpha':0.9}
+    print(pred_mu[:,0,0].shape, features_test[:,0,0].shape,test_val_biases_msb_err[:,0].shape )
+    plt.errorbar(pred_mu[:,0,0], features_test[:,0,0], xerr=test_val_biases_msb_err[:,0],**ebarskwargs)
+    
+    plt.plot(pred_mu[:,:,0], features_test[:,:,0], ls="-", color=color_cycle[2], label="Trained with %s"%(model_kwargs['loss_name']), lw=1.5, alpha=0.5)
     plt.plot(trutheta, trud, ls="-", color="black", dashes=(5, 5), lw=2.0, label=r"$d = \sqrt{1 + \theta^2}$")
     plt.xlabel(r"$\theta$ $\mathrm{and}$ $\hat{\theta}$", fontsize=18)
     plt.ylabel(r"$d$", fontsize=18)
@@ -375,13 +370,13 @@ def test(features, targets, checkpoint_path, func, path, features_test, targets_
 
     logger.info("***--- TESTING FINISHED --- ***")
     
+    
 def make_dir(dirname):
     try:
         if not os.path.exists(dirname):
             os.makedirs(dirname)
     except OSError:
         if not os.path.exists(dirname): raise
-
         
 def main():    
     args = parse_args()
@@ -392,7 +387,7 @@ def main():
     
     outpath = os.path.expanduser(args.workdir)
     make_dir(outpath)
-    example_path='probabilistic_regression_independentnormal_%ifeats_%s'%(NFEATS, model_kwargs['loss_name'])
+    example_path='point_noise_regression_musigma_%ifeats_%s'%(NFEATS, model_kwargs['loss_name'])
     
     trainingpath = os.path.expanduser(os.path.join(outpath,example_path, "training"))
     make_dir(trainingpath)
@@ -401,10 +396,10 @@ def main():
     
     normerspath = os.path.expanduser(os.path.join(outpath, "data","normers"))
     make_dir(normerspath)
-    trainingcat=os.path.join(outpath, "data", "traincat36c.pkl")
-    trainingvalcat=os.path.join(outpath, "data", "trainvalcat36c.pkl")
-    validationcat=os.path.join(outpath, "data", "valcat36c.pkl")
-    testcat=os.path.join(outpath, "data", "testcat36c.pkl")
+    trainingcat=os.path.join(outpath, "data", "traincat38.pkl")
+    trainingvalcat=os.path.join(outpath, "data", "trainvalcat38.pkl")
+    validationcat=os.path.join(outpath, "data", "valcat38.pkl")
+    testcat=os.path.join(outpath, "data", "testcat.pkl")
 
     checkpoint_path=os.path.join(trainingpath, "simple_regression.ckpt")
 
@@ -417,28 +412,31 @@ def main():
     features=features_normer(features)
     targets_normer=MLTF.normer.Normer(targets, type="01")
     targets=targets_normer(targets)
+
     features_val,targets_val=makedata(ncases, nreas+100, f, nmsk_obj, filename=trainingvalcat)
     features_val=features_normer(features_val)
     targets_val=targets_normer(targets_val)
     validation_data= ([features_val.data ,targets_val, np.all(~features_val.mask,axis=2,keepdims=True)],None)
-    validation_split=None
     #validation_data= None
     #validation_split=0.3
-    
+    validation_split=None
     
     
     logger.info("Data was done")
 
-    train(features, targets, trainingpath, checkpoint_path, epochs=100000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
+    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=100000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
 
+    features_test=maketestdata(ncases=100)
+    features_test=features_normer(features_test)
     features_val,targets_val=makedata(ncases, nreas, f, nmsk_obj, filename=validationcat)
     features_val=features_normer(features_val)
     targets_val=targets_normer(targets_val)
-    features_test=maketestdata(ncases=100)
-    features_test=features_normer(features_test)
-    
-    validate(features_val, targets_val, checkpoint_path, validationpath , targets_normer)
+    validate(features_val, targets_val, checkpoint_path, validationpath, targets_normer )
     test(features, targets,checkpoint_path, f, validationpath, features_test, targets_normer, features_normer)
+
+
+
+    
       
 if __name__ == "__main__":
     main()
