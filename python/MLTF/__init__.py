@@ -9,6 +9,9 @@ from . import normer
 from . import plot
 from . import tools
 from . import info
+from . import activations
+from . import model_momentsml
+from . import tools_momentsml
 
 
 

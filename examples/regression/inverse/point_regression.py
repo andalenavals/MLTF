@@ -399,7 +399,7 @@ def main():
     
     logger.info("Data was done")
 
-    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=1000, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
+    train(features,targets, trainingpath, checkpoint_path, reuse=True ,epochs=10, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
 
     features_test=maketestdata(ncases=100)
     features_test=features_normer(features_test)

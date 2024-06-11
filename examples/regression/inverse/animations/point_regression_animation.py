@@ -602,7 +602,7 @@ def main():
     
     logger.info("Data was done")
 
-    train(features,targets, trainingpath, checkpoint_path, reuse=True, epochs=3025, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
+    train(features,targets, trainingpath, checkpoint_path, reuse=True, epochs=100, validation_data=validation_data, validation_split=validation_split, finetune=args.finetune, batch_size=args.batch_size )
 
     features_val,targets_val=makedata(ncases, nreas, f, nmsk_obj, filename=validationcat)
     features_val=features_normer(features_val)

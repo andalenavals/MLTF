@@ -1,0 +1,38 @@
+#!/bin/bash
+
+START_PATH=/users/aanavarroa/original_gitrepos/MLTF/examples/momentsml_evaluation
+COMMAND=$START_PATH/add_predictions.py
+#COMMAND=$START_PATH/add_predictions_pkl.py
+
+TRAINING_MOM=/users/aanavarroa/original_gitrepos/MLTF/examples/momentsml_evaluation/models
+
+#############################################################
+###################### SIZE ESTIMATOR #######################
+#############################################################
+RADDIR=truhlr-trucat-nw-ss_10nodes_varback_varpsf_mse_bulgedisk_1e5_snr7_higmom_samereas/training/
+RAD_NORMER_FEATURES=$TRAINING_MOM/$RADDIR/normers/trurad_input_adamom_g1adamom_g2adamom_sigmaadamom_fluxadamom_rho4skymadpsf_adamom_g1psf_adamom_g2psf_adamom_sigmapsf_adamom_rho4psf_mom_rho4psf_mom_M4_1psf_mom_M4_2_normer.pkl
+RAD_NORMER_TARGET=$TRAINING_MOM/$RADDIR/normers/trurad_targets_normer.pkl
+RAD_MODEL_CONFIG=$TRAINING_MOM/$RADDIR/members/_bestmember/bestmember.cfg
+RAD_FEATURES=("adamom_g1" "adamom_g2" "adamom_sigma" "adamom_flux" "adamom_rho4" "skymad" "psf_adamom_g1" "psf_adamom_g2" "psf_adamom_sigma" "psf_adamom_rho4" "psf_mom_rho4" "psf_mom_M4_1" "psf_mom_M4_2")
+
+#############################################################
+###################### POINT ESTIMATOR ######################
+#############################################################
+GDIR=/g1g2ind-grid-trucat-nw-ss_24nodes_varback_varpsf_psfadamom_nosel_lr0.001_samereas_flagship_1e4/training/
+POINT_MODEL_CONFIG=$TRAINING_MOM/$GDIR/members/_bestmember/bestmember.cfg
+G_NORMER=$TRAINING_MOM/$GDIR/normers/tp_input_adamom_g1adamom_g2adamom_sigmaadamom_fluxadamom_rho4skymadpsf_adamom_g1psf_adamom_g2psf_adamom_sigmapsf_adamom_rho4psf_mom_rho4psf_mom_M4_1psf_mom_M4_2_normer.pkl
+G_FEATURES=("adamom_g1" "adamom_g2" "adamom_sigma" "adamom_flux" "adamom_rho4" "skymad" "psf_adamom_g1" "psf_adamom_g2" "psf_adamom_sigma" "psf_adamom_rho4" "psf_mom_rho4" "psf_mom_M4_1" "psf_mom_M4_2")
+
+
+#############################################################
+##################### CATALOGS AND TRAIN#####################
+#############################################################
+CATS_MOM=/vol/euclidraid5/data/aanavarroa/catalogs/MomentsML2/fullimages_constimg_euclid-flagship0.05
+CAT=$CATS_MOM/tw-test-grid/tru_type2/adamom_trucat_nw_ss/groupcat_rotpair.fits
+
+
+ 
+cd $START_PATH
+
+python $COMMAND --cat=$CAT --g_features ${G_FEATURES[@]}  --g_model_config=$POINT_MODEL_CONFIG  --g_normer=$G_NORMER --rad_model_config=$RAD_MODEL_CONFIG --rad_normer_feats=$RAD_NORMER_FEATURES --rad_normer_targets=$RAD_NORMER_TARGET --rad_features ${RAD_FEATURES[@]}
+ 

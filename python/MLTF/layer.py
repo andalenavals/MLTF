@@ -84,3 +84,121 @@ class TfbilacLayer(tf.keras.layers.Layer):
         config = super(TfbilacLayer, self).get_config()
         config.update({"units": self.nout})
         return config
+
+
+# CUSTOM ACTIVATION FUNCTION AS A LAYER
+def binarystep(x):
+    condition= tf.greater(x, 0.0)
+    result = tf.where(condition, 1.0, 0.0)
+    return result
+
+class Binarystep(tf.keras.layers.Layer):
+    def __init__(self, units, **kwargs):
+        super(Binarystep, self).__init__(**kwargs)
+        self.units = units
+    def build(self, input_shape):
+        assert len(input_shape) == 3
+        super(Binarystep, self).build(input_shape)
+    def compute_output_shape(self, input_shape):
+        assert len(input_shape) == 3
+        (ncase, nrea, nfeat) = input_shape
+        return (int(ncase), int(nrea), int(self.units))
+        
+    def call(self, inputs):
+        return binarystep(inputs)
+
+# CUSTOM ACTIVATION FUNCTION AS A LAYER
+def piecewise(x,a=0.0):
+    condition= tf.greater(x, 0.0)
+    result = tf.where(condition, tf.keras.backend.sigmoid(x)+a, 0.0)
+    #result = tf.where(condition, x, a)
+    return result
+class Piecewise(tf.keras.layers.Layer):
+    def __init__(self, units, **kwargs):
+        super(Piecewise, self).__init__(**kwargs)
+        self.units = units
+        
+    def build(self, input_shape):
+        assert len(input_shape) == 3
+        self.a = self.add_weight(name='a',
+                                 shape=(self.units,),
+                                 initializer='zeros',
+                                 trainable=True)
+        super(Piecewise, self).build(input_shape)
+    def compute_output_shape(self, input_shape):
+        assert len(input_shape) == 3
+        (ncase, nrea, nfeat) = input_shape
+        return (int(ncase), int(nrea), int(self.units))
+
+    def call(self, inputs):
+        return piecewise(inputs, a=self.a)
+
+# CUSTOM ACTIVATION FUNCTION AS A LAYER
+def piecewise2(x,a=0.0, b=0.0):
+    condition= tf.greater(x, b)
+    result = tf.where(condition, tf.keras.backend.sigmoid(x)+a, 0.0)
+    #result = tf.where(condition, x, a)
+    return result
+
+class Piecewise2(tf.keras.layers.Layer):
+    def __init__(self, units, **kwargs):
+        super(Piecewise2, self).__init__(**kwargs)
+        self.units = units
+        
+    def build(self, input_shape):
+        assert len(input_shape) == 3
+        self.a = self.add_weight(name='a',
+                                 shape=(self.units,),
+                                 initializer='zeros',
+                                 trainable=True)
+        self.b = self.add_weight(name='b',
+                                 shape=(self.units,),
+                                 initializer='zeros',
+                                 trainable=True)
+        super(Piecewise2, self).build(input_shape)
+        
+    def compute_output_shape(self, input_shape):
+        assert len(input_shape) == 3
+        (ncase, nrea, nfeat) = input_shape
+        return (int(ncase), int(nrea), int(self.units))
+
+    def call(self, inputs):
+        return piecewise2(inputs, a=self.a, b=self.b)
+
+
+## 3PIECES ACTIVATION FUNCTION
+def piecewise3(x,a=0.0, l=0.2, b=1.0 ):
+    condition= tf.less(x, 0.0)
+    cond2=tf.less(x,l)
+    result = tf.where(condition, a, tf.where(cond2, tf.keras.backend.sigmoid(x), b))
+    return result
+class Piecewise3(tf.keras.layers.Layer):
+    def __init__(self, units, **kwargs):
+        super(Piecewise3, self).__init__(**kwargs)
+        self.units = units
+        
+    def build(self, input_shape):
+        assert len(input_shape) == 3
+        self.a = self.add_weight(name='a',
+                                 shape=(self.units,),
+                                 initializer='zeros',
+                                 trainable=True)
+        self.l = self.add_weight(name='l',
+                                 shape=(self.units,),
+                                 initializer='zeros',
+                                 trainable=True)
+        self.b = self.add_weight(name='b',
+                                 shape=(self.units,),
+                                 initializer='zeros',
+                                 trainable=True)
+        super(Piecewise3, self).build(input_shape)
+        
+    def compute_output_shape(self, input_shape):
+        assert len(input_shape) == 3
+        (ncase, nrea, nfeat) = input_shape
+        return (int(ncase), int(nrea), int(self.units))
+
+    def call(self, inputs):
+        return piecewise3(inputs, a=self.a, l=self.l, b=self.b)
+
+list=["Piecewise", "Piecewise2", "Piecewise3", "Binarystep"]

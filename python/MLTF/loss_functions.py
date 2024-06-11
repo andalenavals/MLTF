@@ -178,6 +178,58 @@ def mswb_lagrange2(targets, wpreds, point_preds, mask=None, lamb=1.0):
 
     return mswb_val
 
+def mswb_autodiff1(targets, preds, point_preds, mask=None, lamb=1.0):
+    ## constraining mean weights of all galaxies to avoid scale degeneracies.
+    import tensorflow as tf
+    preds=tf.convert_to_tensor(preds)
+    
+    with tf.GradientTape() as tape:
+        tape.watch(point_preds)
+        mswb_val=mswb(targets, preds, point_preds, mask=mask)
+    
+    dy_dx = tape.gradient(mswb_val, point_preds)
+
+    if mask is not None:
+        nrea= tf.cast(tf.shape(preds)[1],tf.float32)
+        mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
+        mean_grad_rea=mask_factor*tf.keras.backend.mean(dy_dx*mask, axis=1, keepdims=True)
+        mean_grad= tf.keras.backend.mean(mean_grad_rea)
+    else:
+        mean_grad = tf.keras.backend.mean(dy_dx)
+    lagrange_term=lamb*tf.keras.backend.square(mean_grad)
+    return mswb_val+lagrange_term
+
+def mswb_autodiff2(targets, preds, point_preds, mask=None, lamb=1.0):
+    ## constraining mean weights of all galaxies to avoid scale degeneracies.
+    import tensorflow as tf
+    preds=tf.convert_to_tensor(preds)
+    
+    with tf.GradientTape() as tape:    
+        tape.watch(preds)
+        mswb_val=mswb(targets, preds, point_preds, mask=mask)
+    dy_dx = tape.gradient(mswb_val, preds)
+    
+    if tf.keras.backend.ndim(preds) == 3:
+        if mask is not None:
+            masked_preds=preds*mask
+            #mask factor cancel out for this case
+            num = tf.keras.backend.mean(masked_preds*point_preds, axis=1, keepdims=True) 
+            den = tf.keras.backend.mean(masked_preds , axis=1, keepdims=True)            
+
+            nrea= tf.cast(tf.shape(preds)[1],tf.float32)
+            mask_factor=nrea/tf.keras.backend.sum(mask,axis=1, keepdims=True)
+            mean_grad_rea=mask_factor*tf.keras.backend.mean(dy_dx*mask, axis=1, keepdims=True)
+            lagrange_term= lamb*tf.keras.backend.square(mean_grad_rea)
+        else:
+            num = tf.keras.backend.mean(preds*point_preds, axis=1, keepdims=True) 
+            den = tf.keras.backend.mean(preds , axis=1, keepdims=True)
+            mean_grad_rea=tf.keras.backend.mean(dy_dx, axis=1, keepdims=True)
+            lagrange_term= lamb*tf.keras.backend.square(mean_grad_rea)
+        biases = num/den - targets
+        mswb_val_autodiff=tf.keras.backend.mean(tf.keras.backend.square(biases)+lagrange_term)
+
+    return mswb_val_autodiff
+
 def msmb(targets, mpreds, point_preds, mask=None):
     r"""
     :Parameters:
