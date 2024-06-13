@@ -1,3 +1,27 @@
+#
+# Copyright (C) 2012-2020 Euclid Science Ground Segment
+#
+# This library is free software; you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation; either version 3.0 of the License, or (at your option)
+# any later version.
+#
+# This library is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+# details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this library; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#
+
+"""
+File: python/SHE_KerasML/utils.py
+
+Created on: 13/12/19
+Author: Malte Tewes
+"""
 
 import logging
 import numpy as np
@@ -27,77 +51,67 @@ class Normer:
     norming or denorming.
     """
 
-    def __init__(self, x, type="-11"):
+    def __init__(self, x=None, a=None, b=None, type="-11"):
         """
         Does *not* normalize anything, just determines the normalization parameters!
         """
 
         self.type = type
+        
+        if x is not None:
+            if isinstance(x, np.ma.MaskedArray):
+                logger.debug("Building Normer of type '{}' with a masked array of shape {} and {} masked values".format(
+                    self.type, str(x.shape), np.sum(x.mask)))
+                # np.ma.set_fill_value(x, 1.e20) # To notice things if the array gets filled by error.
+            elif isinstance(x, np.ndarray):
+                logger.debug("Building Normer of type '{}' with an unmasked array of shape {}".format(self.type, x.shape))
+            else:
+                raise ValueError("x is not a numpy array")
 
-        if isinstance(x, np.ma.MaskedArray):
-            logger.debug("Building Normer of type '{}' with a masked array of shape {} and {} masked values".format(
-                self.type, str(x.shape), np.sum(x.mask)))
-            # np.ma.set_fill_value(x, 1.e20) # To notice things if the array gets filled by error.
-        elif isinstance(x, np.ndarray):
-            logger.debug("Building Normer of type '{}' with an unmasked array of shape {}".format(self.type, x.shape))
-        else:
-            raise ValueError("x is not a numpy array")
+            if x.ndim not in (2, 3):
+                raise ValueError("Cannot handle this array shape")
 
-        if x.ndim not in (2, 3):
-            raise ValueError("Cannot handle this array shape")
+            if type in ["01", "-11"]:
+                # For this, we need to compute the min and max value for every feature, along the realizations and cases.
 
-        if type in ["01", "-11"]:
-            # For this, we need to compute the min and max value for every feature, along the realizations and cases.
-
-            if x.ndim == 3:  # If we have several realizations:
-                mins = np.min(np.min(x, axis=1), axis=0)  # Computes the min along reas and cases.
-                dists = np.max(np.max(x, axis=1), axis=0) - mins
+                if x.ndim == 3:  # If we have several realizations:
+                    mins = np.min(np.min(x, axis=1), axis=0)  # Computes the min along reas and cases.
+                    dists = np.max(np.max(x, axis=1), axis=0) - mins
 
 
                 # All these np.min, np.max, np.mean, np.std work as expected also with masked arrays.
-            elif x.ndim == 2:
-                mins = np.min(x, axis=0)  # Only along cases
-                dists = np.max(x, axis=0) - mins
+                elif x.ndim == 2:
+                    mins = np.min(x, axis=0)  # Only along cases
+                    dists = np.max(x, axis=0) - mins
 
-            assert mins.shape == (x.shape[-1],) # Only features are left
-            assert dists.shape == (x.shape[-1],)
+                assert mins.shape == (x.shape[-1],) # Only features are left
+                assert dists.shape == (x.shape[-1],)
 
-            self.a = mins
-            self.b = dists
+                self.a = mins
+                self.b = dists
 
-        elif type == "sa1":
-            # We only rescale the values so that the max amplitude is 1. This ensures that signs are kept.
+            elif type == "sa1":
+                # We only rescale the values so that the max amplitude is 1. This ensures that signs are kept.
 
-            if x.ndim == 3:
-                scales = np.max(np.max(np.fabs(x), axis=1), axis=0)
-            elif x.ndim == 2:
-                scales = np.max(np.fabs(x), axis=0)
+                if x.ndim == 3:
+                    scales = np.max(np.max(np.fabs(x), axis=1), axis=0)
+                elif x.ndim == 2:
+                    scales = np.max(np.fabs(x), axis=0)
 
-            assert scales.ndim == 1  # Only the "feature" dimension remains.
-            # assert scales.shape == (x.shape[-1])
+                assert scales.ndim == 1  # Only the "feature" dimension remains.
+                # assert scales.shape == (x.shape[-1])
 
-            self.b = scales
-            self.a = np.zeros(scales.shape)
+                self.b = scales
+                self.a = np.zeros(scales.shape)
 
-        # elif type == "std":
-        #
-        #     if x.ndim == 3:  # First using rollaxis to reshape array instead of using fancy reshape modes seemed safer...
-        #         xreshaped = np.rollaxis(x, axis=1)  # brings the feature as first index.
-        #         xreshaped = np.reshape(xreshaped, (x.shape[1], -1))  # mixes reas and cases in second index.
-        #         avgs = np.mean(xreshaped, axis=1)  # along reas and cases
-        #         stds = np.std(xreshaped, axis=1)
-        #
-        #     elif x.ndim == 2:  # Easy !
-        #         avgs = np.mean(x, axis=1)  # Along cases
-        #         stds = np.std(x, axis=1)
-        #
-        #     self.a = avgs
-        #     self.b = stds
+            else:
+                raise RuntimeError("Unknown Normer type")
 
+            # logger.debug(str(self))
         else:
-            raise RuntimeError("Unknown Normer type")
-
-        # logger.debug(str(self))
+            self.a=a
+            self.b=b
+            
 
     def __str__(self):
         return "Normer of type '{self.type}': a={self.a}, b={self.b}".format(self=self)

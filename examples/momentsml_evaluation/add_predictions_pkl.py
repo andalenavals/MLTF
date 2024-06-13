@@ -100,8 +100,6 @@ def main():
     shearfiles=[args.g_model_config, args.g_normer,  args.g_features]
     add_shear_preds(cat, shearfiles)
 
-    print(cat)
-  
     overwrite=True
     if overwrite:
         with open(picklecat, 'wb') as handle:

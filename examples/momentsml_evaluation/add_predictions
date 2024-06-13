@@ -28,10 +28,13 @@ G_FEATURES=("adamom_g1" "adamom_g2" "adamom_sigma" "adamom_flux" "adamom_rho4" "
 ##################### CATALOGS AND TRAIN#####################
 #############################################################
 CATS_MOM=/vol/euclidraid5/data/aanavarroa/catalogs/MomentsML2/fullimages_constimg_euclid-flagship0.05
-CAT=$CATS_MOM/tw-test-grid/tru_type2/adamom_trucat_nw_ss/groupcat_rotpair.fits
+#CAT=$CATS_MOM/tw-test-grid/tru_type2/adamom_trucat_nw_ss/groupcat_rotpair.fits
+CAT=$CATS_MOM/tw-test-grid/ksb_trucat_nw_ss1.0/groupcat_rotpair.fits
+
+#CATS_MOM=/vol/euclid6/euclid6_1/dchatterjee/thesis/sims/batch_2/sim_cosmos_param/
+#CAT=$CATS_MOM/ksb_sexcat_nw_ss1.0/groupcat_rotpair.fits
 
 
- 
 cd $START_PATH
 
 python $COMMAND --cat=$CAT --g_features ${G_FEATURES[@]}  --g_model_config=$POINT_MODEL_CONFIG  --g_normer=$G_NORMER --rad_model_config=$RAD_MODEL_CONFIG --rad_normer_feats=$RAD_NORMER_FEATURES --rad_normer_targets=$RAD_NORMER_TARGET --rad_features ${RAD_FEATURES[@]}
