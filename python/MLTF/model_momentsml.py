@@ -48,7 +48,7 @@ def get_model(hidden_sizes=(5,5), activation='sigmoid', in_activation=None, laye
     model.add(layer(noutputs))
 
     if out_activation is None:
-        if loss_name in ['mswb', 'mswb_lagrange1', 'mswb_lagrange2', 'mswb_autodiff1', 'mswb_autodiff2']:
+        if loss_name in ['mswb','mswb_mudot', 'mswb_lagrange1', 'mswb_lagrange2', 'mswb_autodiff1', 'mswb_autodiff2']:
             logger.info("Adding sigmoid activation to the last neuron since mswb was called")
             model.add(tf.keras.layers.Activation('sigmoid'))
     else:
@@ -86,7 +86,8 @@ def create_model(input_shape=None, hidden_sizes=(5,5), layer=None, activation='s
                       noutputs=noutputs, out_activation=out_activation, loss_name=loss_name )
                 
     x=model(inputs[0], training=training)
-        
+
+    loss_func=None
     if loss_name == 'mse':
         logger.info("Using %s"%(loss_name))
         if use_mask:
@@ -198,7 +199,9 @@ def create_model(input_shape=None, hidden_sizes=(5,5), layer=None, activation='s
     # Adding loss function is problematic when trying multiprocessing
     model=(tf.keras.Model(inputs=inputs,outputs=[x]))
     logger.debug("Trying to add losss to the model")
-    model.add_loss(loss_func)
+
+    if loss_func is not None:
+        model.add_loss(loss_func)
     #model.add_loss(lambda: loss_func)
     
     logger.debug("Loss function successfully added to the the model")
@@ -255,7 +258,8 @@ def create_2compind_model(input_shape=None, hidden_sizes=(5,5), layer=None, acti
     z=model1(inputs[0])
     y=model2(inputs[0])
     x=tf.keras.layers.Concatenate()([z,y])
-    
+
+    loss_func=None
     if loss_name == 'mse':
         logger.info("Using %s"%(loss_name))
         if use_mask:
@@ -312,7 +316,9 @@ def create_2compind_model(input_shape=None, hidden_sizes=(5,5), layer=None, acti
     # Adding loss function is problematic when trying multiprocessing
     model=(tf.keras.Model(inputs=inputs,outputs=[x]))
     logger.debug("Trying to add losss to the model")
-    model.add_loss(loss_func)
+
+    if loss_func is not None:
+        model.add_loss(loss_func)
     
     logger.debug("Loss function successfully added to the the model")
     return model
@@ -365,7 +371,8 @@ def create_mw_model(input_shape_w=None, hidden_sizes_w=(5,5), layer_w=None, acti
     
     x=model_w(inputs[0])
     y=model_m(inputs[1])
-    
+
+    loss_func=None
     if loss_name == 'mswcb':
         logger.info("Using %s"%(loss_name))
         if use_mask:
@@ -408,5 +415,7 @@ def create_mw_model(input_shape_w=None, hidden_sizes_w=(5,5), layer_w=None, acti
     #concat = tf.keras.layers.Concatenate()([x,y])
     
     full_model = (tf.keras.Model(inputs=inputs, outputs=[x,y]))
-    full_model.add_loss(loss_func)
+
+    if loss_func is not None:
+        full_model.add_loss(loss_func)
     return full_model

@@ -24,7 +24,7 @@ def load_model(h5file=None, modelkwargs=None, concatenatenn=False):
         #loaded_model=tf.keras.models.load(h5file)
 
     if (modelkwargs is not None):
-        if modelkwargs["loss_name"] in [ 'mswcb', 'mswcb_lagrange1', 'mswcb_lagrange2',  'mswrb', 'mswrb_lagrange1', 'mswrb_lagrange2']:
+        if modelkwargs["loss_name"] in [ 'mswcb', 'mswcb_mudot', 'mswcb_lagrange1', 'mswcb_lagrange2',  'mswrb', 'mswrb_lagrange1', 'mswrb_lagrange2']:
             logger.info("Loading a mw model")
             loaded_model=model.create_mw_model(**modelkwargs)
         else:
@@ -301,3 +301,56 @@ def get_modelkwargs(configfile=None, input_shape=None, use_mask=True, use_casewe
     }
 
     return modelkwargs
+
+
+def get_modelkwargs_wm(configfile=None,input_shape_w=None,input_shape_m=None,  use_mask=True, noutputs=1):
+    ## all this for getting features.shape only
+    from . import layer
+    logger.info("Reading config file %s \n"%(configfile))
+    conf=readconfig(configfile)
+    
+    hiden_sizes_w=list(eval(conf.get("net_model", "hidden_sizes_w")))
+    try: in_activation_w=conf.get("net_model", "in_activation_w")
+    except: in_activation_w=None
+    activation_w=conf.get("net_model", "activation_w")
+    out_activation_w=conf.get("net_model", "out_activation_w")
+    lay_w=eval(conf.get("net_model", "layer_w"))
+    hiden_sizes_m=list(eval(conf.get("net_model", "hidden_sizes_m")))
+    try: in_activation_m=conf.get("net_model", "in_activation_m")
+    except: in_activation_m=None
+    activation_m=conf.get("net_model", "activation_m")
+    out_activation_m=conf.get("net_model", "out_activation_m")
+    lay_m=eval(conf.get("net_model", "layer_m"))
+    loss_name=conf.get("net_model", "loss_name")
+    try: lamb=eval(conf.get("net_model", "lambda"))
+    except: lamb=None
+    
+    if (out_activation_w==""): out_activation_w=None
+    if (out_activation_m==""): out_activation_m=None
+    if (in_activation_w==""): in_activation_w=None
+    if (in_activation_m==""): in_activation_m=None
+    if (activation_w==""): activation_w=None
+    if (activation_m==""): activation_m=None
+    if (lamb==""): lamb=None
+        
+    modelkwargs={"input_shape_w":input_shape_w,
+                 "hidden_sizes_w":hiden_sizes_w,
+                 "layer_w":lay_w,
+                 "activation_w":activation_w,
+                 "in_activation_w":in_activation_w,
+                 "out_activation_w":out_activation_w,
+                 "input_shape_m":input_shape_m,
+                 "hidden_sizes_m":hiden_sizes_m,
+                 "layer_m":lay_m,
+                 "activation_m":activation_m,
+                 "in_activation_m":in_activation_m,
+                 "out_activation_m":out_activation_m,
+                 "loss_name":loss_name,
+                 "use_mask":use_mask,
+                 "lamb": lamb,
+                 "noutputs": noutputs,
+
+    }
+    logger.info("Modelkwargs obtained")
+    return modelkwargs
+  

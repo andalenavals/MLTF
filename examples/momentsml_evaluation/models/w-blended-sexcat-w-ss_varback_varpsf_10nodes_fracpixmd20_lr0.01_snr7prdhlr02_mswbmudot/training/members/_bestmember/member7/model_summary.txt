@@ -1,0 +1,90 @@
+Model: "model"
+__________________________________________________________________________________________________
+ Layer (type)                   Output Shape         Param #     Connected to                     
+==================================================================================================
+ input_1 (InputLayer)           [(None, 25314, 11)]  0           []                               
+                                                                                                  
+ input_2 (InputLayer)           [(None, None, None)  0           []                               
+                                ]                                                                 
+                                                                                                  
+ input_3 (InputLayer)           [(None, 25314, None  0           []                               
+                                )]                                                                
+                                                                                                  
+ input_4 (InputLayer)           [(None, 25314, None  0           []                               
+                                )]                                                                
+                                                                                                  
+ sequential (Sequential)        (None, 25314, 1)     241         ['input_1[0][0]']                
+                                                                                                  
+ tf.math.multiply (TFOpLambda)  (None, 25314, None)  0           ['sequential[0][0]',             
+                                                                  'input_4[0][0]']                
+                                                                                                  
+ tf.math.multiply_1 (TFOpLambda  (None, 25314, None)  0          ['tf.math.multiply[0][0]',       
+ )                                                                'input_3[0][0]']                
+                                                                                                  
+ tf.math.reduce_mean (TFOpLambd  (None, 1, None)     0           ['tf.math.multiply_1[0][0]']     
+ a)                                                                                               
+                                                                                                  
+ tf.math.reduce_mean_1 (TFOpLam  (None, 1, None)     0           ['tf.math.multiply[0][0]']       
+ bda)                                                                                             
+                                                                                                  
+ tf.math.truediv (TFOpLambda)   (None, 1, None)      0           ['tf.math.reduce_mean[0][0]',    
+                                                                  'tf.math.reduce_mean_1[0][0]']  
+                                                                                                  
+ tf.math.subtract (TFOpLambda)  (None, None, None)   0           ['tf.math.truediv[0][0]',        
+                                                                  'input_2[0][0]']                
+                                                                                                  
+ tf.math.multiply_2 (TFOpLambda  (None, None, None)  0           ['input_2[0][0]',                
+ )                                                                'tf.math.subtract[0][0]']       
+                                                                                                  
+ tf.math.reduce_mean_4 (TFOpLam  ()                  0           ['input_2[0][0]']                
+ bda)                                                                                             
+                                                                                                  
+ tf.math.reduce_mean_5 (TFOpLam  ()                  0           ['tf.math.subtract[0][0]']       
+ bda)                                                                                             
+                                                                                                  
+ tf.math.multiply_4 (TFOpLambda  (None, None, None)  0           ['input_2[0][0]',                
+ )                                                                'input_2[0][0]']                
+                                                                                                  
+ tf.math.reduce_mean_7 (TFOpLam  ()                  0           ['input_2[0][0]']                
+ bda)                                                                                             
+                                                                                                  
+ tf.math.reduce_mean_3 (TFOpLam  ()                  0           ['tf.math.multiply_2[0][0]']     
+ bda)                                                                                             
+                                                                                                  
+ tf.math.multiply_3 (TFOpLambda  ()                  0           ['tf.math.reduce_mean_4[0][0]',  
+ )                                                                'tf.math.reduce_mean_5[0][0]']  
+                                                                                                  
+ tf.math.reduce_mean_6 (TFOpLam  ()                  0           ['tf.math.multiply_4[0][0]']     
+ bda)                                                                                             
+                                                                                                  
+ tf.math.square_1 (TFOpLambda)  ()                   0           ['tf.math.reduce_mean_7[0][0]']  
+                                                                                                  
+ tf.math.subtract_1 (TFOpLambda  ()                  0           ['tf.math.reduce_mean_3[0][0]',  
+ )                                                                'tf.math.multiply_3[0][0]']     
+                                                                                                  
+ tf.math.subtract_2 (TFOpLambda  ()                  0           ['tf.math.reduce_mean_6[0][0]',  
+ )                                                                'tf.math.square_1[0][0]']       
+                                                                                                  
+ tf.math.truediv_1 (TFOpLambda)  ()                  0           ['tf.math.subtract_1[0][0]',     
+                                                                  'tf.math.subtract_2[0][0]']     
+                                                                                                  
+ tf.math.square (TFOpLambda)    (None, None, None)   0           ['tf.math.subtract[0][0]']       
+                                                                                                  
+ tf.math.abs (TFOpLambda)       ()                   0           ['tf.math.truediv_1[0][0]']      
+                                                                                                  
+ tf.math.reduce_mean_2 (TFOpLam  ()                  0           ['tf.math.square[0][0]']         
+ bda)                                                                                             
+                                                                                                  
+ tf.math.multiply_5 (TFOpLambda  ()                  0           ['tf.math.abs[0][0]']            
+ )                                                                                                
+                                                                                                  
+ tf.math.multiply_6 (TFOpLambda  ()                  0           ['tf.math.reduce_mean_2[0][0]',  
+ )                                                                'tf.math.multiply_5[0][0]']     
+                                                                                                  
+ add_loss (AddLoss)             ()                   0           ['tf.math.multiply_6[0][0]']     
+                                                                                                  
+==================================================================================================
+Total params: 241
+Trainable params: 241
+Non-trainable params: 0
+__________________________________________________________________________________________________

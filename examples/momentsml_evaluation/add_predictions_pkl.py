@@ -32,7 +32,6 @@ def parse_args():
                         nargs='+',
                         help='Features for training mu')
     
- 
     parser.add_argument('--g_features',
                         default=[],
                         nargs='+',
@@ -43,6 +42,36 @@ def parse_args():
     parser.add_argument('--g_normer',
                         default=None, 
                         help='normed used for the training of g')
+
+    parser.add_argument('--ws_features',
+                        default=[],
+                        nargs='+',
+                        help='Features for training ws')
+    parser.add_argument('--ws_model_config',
+                        default=None, 
+                        help='Config file containing network properties of ws model')
+    parser.add_argument('--ws_normer',
+                        default=None, 
+                        help='normed used for the training of ws')
+
+    parser.add_argument('--w_features',
+                        default=[],
+                        nargs='+',
+                        help='Features for training w')
+    parser.add_argument('--m_features',
+                        default=[],
+                        nargs='+',
+                        help='Features for training w')
+    parser.add_argument('--wm_model_config',
+                        default=None, 
+                        help='Config file containing network properties of wm model')
+    parser.add_argument('--w_normer',
+                        default=None, 
+                        help='normed used for the training of w')
+    parser.add_argument('--m_normer',
+                        default=None, 
+                        help='normed used for the training of w')
+
 
     args = parser.parse_args()
     return args
@@ -74,6 +103,35 @@ def add_rad_preds(cat, radfiles):
 
     rad_preds=rad_targets_normer.denorm(rad_preds)
     cat["pre_rad"]=rad_preds[:,:, 0]
+
+def add_ws_preds(cat, wsfiles):
+    [ws_model_config, ws_feats_names, inputlabels]=wsfiles
+    with open(ws_feats_names, 'rb') as handle: ws_features_normer = pickle.load(handle)
+
+    features = MLTF.tools_momentsml.get3Ddata(cat, inputlabels)
+    point_modelkwargs=MLTF.tools_momentsml.get_modelkwargs(configfile=ws_model_config, input_shape=features[0].shape, use_mask=True, noutputs=1)
+    
+    weights=[os.path.join(wfold, "weights.ckpt") for wfold in glob.glob("%s/**/"%(os.path.dirname(ws_model_config)))]
+    ws_preds=MLTF.tools_momentsml.getpreds_model(ws_features_normer(features).astype('float32'), modelkwargs= point_modelkwargs, model_weights=weights, useprocess=True, combine="mean")
+    
+    cat["ws"]=ws_preds[:,:,0]
+
+def add_wm_preds(cat, wmfiles):
+    [wm_model_config, w_feats_normer_name, m_feats_normer_name, inputlabels_w, inputlabels_m, ]=wmfiles
+    with open(w_feats_normer_name, 'rb') as handle: w_feats_normer = pickle.load(handle)
+    with open(m_feats_normer_name, 'rb') as handle: m_feats_normer = pickle.load(handle)
+    features_w = MLTF.tools_momentsml.get3Ddata(cat, inputlabels_w)
+    features_m = MLTF.tools_momentsml.get3Ddata(cat, inputlabels_m)
+    inputs=[w_feats_normer(features_w).astype('float32'), m_feats_normer(features_m).astype('float32')]
+    modelkwargs=MLTF.tools_momentsml.get_modelkwargs_wm(configfile=wm_model_config, input_shape_w=features_w[0].shape, input_shape_m=features_m[0].shape, use_mask=True, noutputs=1)
+
+    weights=[os.path.join(wfold, "weights.ckpt") for wfold in glob.glob("%s/**/"%(os.path.dirname(wm_model_config)))]
+    w_preds, m_preds=MLTF.tools_momentsml.getpreds_model(inputs,
+                                                    modelkwargs= modelkwargs, model_weights=weights,
+                                                    useprocess=True, combine="mean")
+    cat["w"]=w_preds[:,:,0]
+    cat["m"]=m_preds[:,:,0]
+
        
   
 def main():    
@@ -92,8 +150,14 @@ def main():
     assert os.path.isfile(picklecat)
 
     with open(picklecat, 'rb') as handle:
-            cat = pickle.load(handle)
+        cat = pickle.load(handle)
 
+    wmfiles=[args.wm_model_config, args.w_normer,  args.m_normer,  args.w_features, args.m_features]
+    add_wm_preds(cat, wmfiles)
+    
+    wsfiles=[args.ws_model_config, args.ws_normer, args.ws_features]
+    add_ws_preds(cat, wsfiles)
+            
     radfiles=[args.rad_model_config, args.rad_normer_feats, args.rad_normer_targets, args.rad_features]
     add_rad_preds(cat, radfiles)
 
